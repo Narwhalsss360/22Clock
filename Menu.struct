@@ -1,0 +1,26 @@
+CLOCKFACE
+]USER
+]HH:MM:SS
+]DAYOFTHEWEEK
+]MM:DD:YYYY
+    SETTINGS
+    ]TIME
+        ]SET TIME
+            ]HOUR ->VAL
+            ]MINUTE ->VAL
+            ]SECOND ->VAL
+            ]MONTH ->VAL
+            ]DAY ->VAL
+            ]YEAR ->VAL
+        ]USE24HOUR ->VAL
+        ]USEGMT ->VAL
+        ]TIMEZONE   ->VAL
+    ]ALARM
+        ]
+    ]BRIGHTNESS ->VAL
+    ]
+NOTIFICATION
+]N1
+]N2
+]N3
+]N4
