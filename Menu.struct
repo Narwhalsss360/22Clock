@@ -6,18 +6,21 @@ CLOCKFACE
     SETTINGS
     ]TIME
         ]SET TIME
-            ]HOUR ->VAL
+            ]HOUR   ->VAL
             ]MINUTE ->VAL
             ]SECOND ->VAL
-            ]MONTH ->VAL
-            ]DAY ->VAL
-            ]YEAR ->VAL
-        ]USE24HOUR ->VAL
-        ]USEGMT ->VAL
+            ]MONTH  ->VAL
+            ]DAY    ->VAL
+            ]YEAR   ->VAL
+        ]USE24HOUR  ->VAL
+        ]USEGMT     ->VAL
         ]TIMEZONE   ->VAL
     ]ALARM
+        ]ENABLED    ->VAL
+        ]HOUR       ->VAL
+        ]MINUTE     ->VAL
         ]
-    ]BRIGHTNESS ->VAL
+    ]BRIGHTNESS     ->VAL
     ]
 NOTIFICATION
 ]N1
