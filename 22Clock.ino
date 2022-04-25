@@ -102,7 +102,6 @@ struct DISP
     MENUS menu = CLOCKFACE;
     byte pointer;
     byte scroll;
-    bool cursor;
     bool editing;
 
     void setup()
@@ -176,21 +175,25 @@ struct DISP
         EEPROM.update(BRIGHTNESS_ADDRESS, savedBrightness);
     }
 
-    void add(String str, byte row)
+    void setLine(String str, byte row)
     {
         this->nextLines[row] += str;
     }
 
-    void qAdd(String str1, String str2, String str3, String str4)
+    void quickSet(String str1, String str2, String str3, String str4)
     {
         this->clear();
-        this->add(str1, LINE_1);
-        this->add(str2, LINE_2);
-        this->add(str3, LINE_3);
-        this->add(str4, LINE_4);
+        this->setLine(str1, LINE_1);
+        this->setLine(str2, LINE_2);
+        this->setLine(str3, LINE_3);
+        this->setLine(str4, LINE_4);
+        this->setLine("", LINE_5);
+        this->setLine("", LINE_6);
+        this->setLine("", LINE_7);
+        this->setLine("", LINE_8);
     }
 
-    void fromRight(String str, byte row)
+    void setLineFromRight(String str, byte row)
     {
         for (int spaces = 0; spaces < abs(this->nextLines[row].length() - str.length()); spaces++)
         {
@@ -238,7 +241,7 @@ struct DISP
         }
     }
 
-    void moveUp()
+    void movePointerUp()
     {
         if (this->pointer != LINE_1)
         {
@@ -250,7 +253,7 @@ struct DISP
         }
     }
 
-    void moveDown()
+    void movePointerDown()
     {
         byte last = this->getLastLine();
         if (this->pointer != last )
@@ -302,7 +305,9 @@ private:
             }
         }
     }
+    
     String oldLines[LINES];
+    bool cursor;
 };
 
 DISP display;
@@ -350,7 +355,7 @@ struct _INPUT
         }
     }
 
-    bool backTime()
+    bool backPress()
     {
         if (this->button.released() && this->button.getReleasedHoldTime() < BACKLIGHT_TOGGLE_INTERVAL)
             return true;
@@ -368,10 +373,10 @@ struct TIME
     RTC_DS3231 rtc;
     DateTime localTime;
     DateTime GMT;
-    byte alarmHour = 0;
-    byte alarmMinute = 0;
+    byte alarmHour = ZERO;
+    byte alarmMinute = ZERO;
     bool alarm = false;
-    int timeZone = 0;
+    int timeZone = ZERO;
     bool autoOff = true;
     bool useGMT = false;
     bool use24Hour = false;
@@ -397,6 +402,16 @@ struct TIME
     {
         this->localTime = this->rtc.now();
         this->GMT = DateTime(this->localTime.unixtime() + (this->timeZone*SECONDS_IN_HOUR));
+    }
+
+    void decreaseTimeZone()
+    {
+        if (this->timeZone != MIN_TIMEZONE) this->timeZone--;
+    }
+
+    void increaseTimeZone()
+    {
+        if (this->timeZone != MAX_TIMEZONE) this->timeZone++;
     }
 
     void getSaved()
@@ -495,56 +510,56 @@ void menuSwitch()
 void clockface()
 {
     display.clear();
-    display.add(RECIPIENT, LINE_1);
+    display.setLine(RECIPIENT, LINE_1);
 
-    display.add(String((time.use24Hour) ? ((time.useGMT) ? time.GMT.hour() : time.GMT.twelveHour() ) : ((time.useGMT ? time.localTime.hour(): time.localTime.twelveHour()))), LINE_2);
-    display.add(" ", LINE_2);
-    display.add(String(time.localTime.minute()), LINE_2);
-    display.add(" ", LINE_2);
-    display.add(String(time.localTime.second()), LINE_2);
+    display.setLine(String((time.use24Hour) ? ((time.useGMT) ? time.GMT.hour() : time.GMT.twelveHour() ) : ((time.useGMT ? time.localTime.hour(): time.localTime.twelveHour()))), LINE_2);
+    display.setLine(" ", LINE_2);
+    display.setLine(String(time.localTime.minute()), LINE_2);
+    display.setLine(" ", LINE_2);
+    display.setLine(String(time.localTime.second()), LINE_2);
 
-    display.add(daysOfTheWeek[(time.useGMT) ? time.GMT.dayOfTheWeek() : time.localTime.dayOfTheWeek()], LINE_3);
+    display.setLine(daysOfTheWeek[(time.useGMT) ? time.GMT.dayOfTheWeek() : time.localTime.dayOfTheWeek()], LINE_3);
 
     if (time.useShortDate)
     {
         if (time.useGMT)
         {
-            display.add(String(time.GMT.month()), LINE_4);
-            display.add(" ", LINE_4);
-            display.add(String(time.GMT.day()), LINE_4);
-            display.add(" ", LINE_4);
-            display.add(String(time.GMT.year()), LINE_4);
+            display.setLine(String(time.GMT.month()), LINE_4);
+            display.setLine(" ", LINE_4);
+            display.setLine(String(time.GMT.day()), LINE_4);
+            display.setLine(" ", LINE_4);
+            display.setLine(String(time.GMT.year()), LINE_4);
         }
         else
         {
-            display.add(String(time.localTime.month()), LINE_4);
-            display.add(" ", LINE_4);
-            display.add(String(time.localTime.day()), LINE_4);
-            display.add(" ", LINE_4);
-            display.add(String(time.localTime.year()), LINE_4);
+            display.setLine(String(time.localTime.month()), LINE_4);
+            display.setLine(" ", LINE_4);
+            display.setLine(String(time.localTime.day()), LINE_4);
+            display.setLine(" ", LINE_4);
+            display.setLine(String(time.localTime.year()), LINE_4);
         }
     }
     else
     {
         if (time.useGMT)
         {
-            display.add(String(months[time.GMT.month() - 1]), LINE_4);
-            display.add(" ", LINE_4);
-            display.add(String(time.GMT.day()), LINE_4);
-            display.add(" ", LINE_4);
-            display.add(String(time.GMT.year()), LINE_4);
+            display.setLine(String(months[time.GMT.month() - 1]), LINE_4);
+            display.setLine(" ", LINE_4);
+            display.setLine(String(time.GMT.day()), LINE_4);
+            display.setLine(" ", LINE_4);
+            display.setLine(String(time.GMT.year()), LINE_4);
         }
         else
         {
-            display.add(String(months[time.localTime.month() - 1]), LINE_4);
-            display.add(" ", LINE_4);
-            display.add(String(time.localTime.day()), LINE_4);
-            display.add(" ", LINE_4);
-            display.add(String(time.localTime.year()), LINE_4);
+            display.setLine(String(months[time.localTime.month() - 1]), LINE_4);
+            display.setLine(" ", LINE_4);
+            display.setLine(String(time.localTime.day()), LINE_4);
+            display.setLine(" ", LINE_4);
+            display.setLine(String(time.localTime.year()), LINE_4);
         }
     }
 
-    if (input.backTime()) display.next();
+    if (input.backPress()) display.next();
 
     display.send();
 }
@@ -552,13 +567,15 @@ void clockface()
 void settings()
 {
     display.clear();
-    display.qAdd
+    display.quickSet
     (
         "TIME SETTINGS",
         "ALARM SETTINGS",
         "BRIGHTNESS",
         ""
     );
+
+    display.setLineFromRight(String(display.brightness), LINE_3);
 
     if (input.rotaryPush.pressed())
     {
@@ -579,19 +596,96 @@ void settings()
     {
     case ROTARYSTATES::CLOCKWISE:
         if (display.editing && display.pointer == LINE_3) display.increaseBrightness();
-        if (!display.editing) display.moveDown();
+        if (!display.editing) display.movePointerDown();
         break;
     case ROTARYSTATES::COUNTER_CLOCKWISE:
         if (display.editing && display.pointer == LINE_3) display.decreaseBrightness();
-        if (!display.editing) display.moveUp();
+        if (!display.editing) display.movePointerUp();
         break;
     default:
         break;
     }
 
-    if (input.backTime()) display.goTo(display.CLOCKFACE);
+    if (input.backPress()) display.goTo(display.CLOCKFACE);
 
     display.send();
+}
+
+void timeSettings()
+{
+    display.clear();
+    display.setLine("SET TIME", LINE_1);
+    display.setLine("USE 24 HOUR", LINE_2);
+    display.setLineFromRight(boolToString(time.use24Hour), LINE_2);
+    display.setLine("USE GMT", LINE_3);
+    display.setLineFromRight(boolToString(time.useGMT), LINE_3);
+    display.setLine("TIMEZONE", LINE_4);
+    display.setLineFromRight(String(time.timeZone), LINE_4);
+
+    if (input.rotaryPush.pressed())
+    {
+        switch (display.pointer)
+        {
+        case LINE_1:
+            break;
+        default:
+            break;
+        }
+    }
+    
+    switch (input.rotaryState)
+    {
+    case COUNTER_CLOCKWISE:
+        if (display.editing)
+        {
+            switch (display.pointer)
+            {
+            case LINE_2:
+                /* code */
+                break;
+            case LINE_3:
+                /* code */
+                break;
+            case LINE_4:
+                /* code */
+                break;
+            default:
+                break;
+            }
+        }
+        else
+        {
+            display.movePointerUp();
+        }
+        break;
+    case CLOCKWISE:
+        if (display.editing)
+        {
+            switch (display.pointer)
+            {
+            case LINE_2:
+                time.use24Hour = true;
+                break;
+            case LINE_3:
+                time.useGMT = true;
+                break;
+            case LINE_4:
+                
+                break;
+            default:
+                break;
+            }
+        }
+        else
+        {
+            display.movePointerUp();
+        }
+        break;   
+    default:
+        break;
+    }
+
+    if (input.backPress()) display.goTo(display.SETTINGS);
 }
 
 void notification()
