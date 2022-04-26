@@ -689,7 +689,7 @@ void timeSettings()
         }
         else
         {
-            display.movePointerUp();
+            display.movePointerDown();
         }
         break;   
     default:
@@ -710,9 +710,75 @@ void setTime()
 	display.setLine("SET MINUTE", LINE_2);
 	display.setLineFromRight(String(newTime.minute()), LINE_2);
 	display.setLine("SET SECOND", LINE_3);
-	display.setLinesFromRight(String(newTime.second), LINE_3);
+	display.setLineFromRight(String(newTime.second), LINE_3);
+	display.setLine("SET MONTH", LINE_4);
+	display.setLineFromRight(String(newTime.month()), LINE_4);
+	display.setLine("SET DAY", LINE_5);
+	diaplay.setLineFromRight(String(newTime.day()), LINE_5);
+	display.setLine("SET YEAR", LINE_6);
+	display.setLineFromRight(String(newTime.year()), LINE_6);
 	
+	switch(input.rotaryState)
+	{
+		case COUNTER_CLOCKWISE:
+			if (display.editing)
+			{
+				switch(display.pointer)
+				{
+					case LINE_1:
+						break;
+					case LINE_2:
+						break;
+					case LINE_3:
+						break;
+					case LINE_4:
+						break;
+					case LINE_5:
+						break;
+					case LINE_6:
+						break;
+					default:
+						break;
+				}
+			}
+			else
+			{
+				display.movePointerUp();
+			}
+			break;
+		case CLOCKWISE:
+			if (display.editing)
+			{
+				switch(display.pointer)
+				{
+					case LINE_1:
+						break;
+					case LINE_2:
+						break;
+					case LINE_3:
+						break;
+					case LINE_4:
+						break;
+					case LINE_5:
+						break;
+					case LINE_6:
+						break;
+					default:
+						break;
+				}
+			}
+			else
+			{
+				display.movePointerDown();
+			}
+			break;
+		default:
+			break;
+	}
 	
+	if (newTime != time.localTime)
+		time.rtc.adjust(newTime);
+		
     display.send();
 }
 
