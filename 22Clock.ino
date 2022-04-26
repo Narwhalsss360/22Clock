@@ -703,10 +703,16 @@ void timeSettings()
 
 void setTime()
 {
+    DateTime newTime = time.localTime;
     display.clearLines();
-    
-
-
+    display.setLine("SET HOUR", LINE_1);
+	display.setLineFromRight(String(newTime.hour()), LINE_1);
+	display.setLine("SET MINUTE", LINE_2);
+	display.setLineFromRight(String(newTime.minute()), LINE_2);
+	display.setLine("SET SECOND", LINE_3);
+	display.setLinesFromRight(String(newTime.second), LINE_3);
+	
+	
     display.send();
 }
 
