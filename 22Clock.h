@@ -41,47 +41,47 @@
 #define isBetweenInclude(low, val, high) low <= val && val <= high
 #pragma endregion
 
-char daysOfTheWeek[7][10] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
-
-char months[12][10] = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" }
-
-void changeSecond(DateTime pDt, byte newSec)
+#pragma region Change DateTime
+void changeSecond(DateTime* pDt, byte newSec)
 {
 	if (isBetweenInclude(SEC_MIN, newSec, SEC_MAX))
-	*pDt = DateTime();
+	    *pDt = DateTime(pDt->year(), pDt->month(), pDt->day(), pDt->hour(), pDt->minute(), newSec);
 }
 
-void changeMinute(DateTime pDt, byte newMin)
+void changeMinute(DateTime* pDt, byte newMin)
 {
 	if (isBetweenInclude(MIN_MIN, newMin, MIN_MAX))
-	*pDt = DateTime();
+	    *pDt = DateTime(pDt->year(), pDt->month(), pDt->day(), pDt->hour(), newMin, pDt->second());
 }
 
-void changeHour(DateTime pDt, byte newHr)
+void changeHour(DateTime* pDt, byte newHr)
 {
-	if (isBetweenInclude(HR_MIN, newHr, HR_MAX)
-	*pDt = DateTime();
+	if (isBetweenInclude(HR_MIN, newHr, HR_MAX))
+        *pDt = DateTime(pDt->year(), pDt->month(), pDt->day(), newHr, pDt->minute(), pDt->second());
 }
 
-void changeDay(DateTime pDt, byte newDay)
+void changeDay(DateTime* pDt, byte newDay)
 {
 	if(isBetweenInclude(DAY_MIN, newDay, DAY_MAX))
-	*pDt = DateTime();
+	    *pDt = DateTime(pDt->year(), pDt->month(), newDay, pDt->hour(), pDt->minute(), pDt->second());
 }
 
-void changeMonth(DateTime pDt, byte newMon)
+void changeMonth(DateTime* pDt, byte newMon)
 {
 	if (isBetweenInclude(MON_MIN, newMon, MON_MAX))
-	*pDt = DateTime();
+	    *pDt = DateTime(pDt->year(), newMon, pDt->day(), pDt->hour(), pDt->minute(), pDt->second());
 }
 
-void changeYear(DateTime pDt, unsigned short newYr)
+void changeYear(DateTime* pDt, unsigned short newYr)
 {
 	if (isBetweenInclude(YR_MIN, newYr, YR_MAX))
-	*pDt = DateTime();
+	    *pDt = DateTime(newYr, pDt->month(), pDt->day(), pDt->hour(), pDt->minute(), pDt->second());
 }
+#pragma endregion
 
 #pragma region Globals
+char daysOfTheWeek[7][10] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+char months[12][10] = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
 void (*reset)(void) = NULL;
 void startReset();
 void rotaryServiceRoutine();
