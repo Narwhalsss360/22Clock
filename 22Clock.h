@@ -42,6 +42,8 @@
 #define RECIPIENT "USER"
 #define WAIT_TIME 2000
 
+#define TIME_RECV_ADDR 1
+
 #define isBetweenInclude(low, val, high) low <= val && val <= high
 #define isBetween(low, val, high) low < val && val < high
 #pragma endregion
@@ -351,6 +353,7 @@ private:
         this->pointer = LINE_1;
         this->scroll = LINE_1;
         this->cursor = false;
+        this->edit(false);
     }
 
     void saveOldLines()

@@ -39,6 +39,27 @@ bool getSaved()
 
 }
 
+void done(unsigned int addr, unsigned long data)
+{
+    if (addr == TIME_RECV_ADDR)
+    {
+        time.localTime = DateTime(data);
+        display.quickSet
+        (
+            "TIME RECEIVED",
+            "UNIX",
+            String(data),
+            ""
+        );
+        display.goTo(display.NOTIFICATION);
+    }
+}
+
+void serialEvent()
+{
+    SerialCom.onSerialEvent(&done, NULL);
+}
+
 void setup()
 {
     bool wasReset = getSaved();
@@ -46,7 +67,7 @@ void setup()
     time.setup();
     display.setup();
 
-    //Serial.begin(SERIALCOM_BAUD);
+    Serial.begin(SERIALCOM_BAUD);
 
     //delay(WAIT_TIME);
 }
