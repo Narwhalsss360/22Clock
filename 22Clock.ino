@@ -1,359 +1,367 @@
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
-#include <NarsLibraries.h>
-#include <RTClib.h>
-#include <EEPROM.h>
+#include "22Clock.h"
 
-#pragma region Defenitions
-#define SECONDS_IN_HOUR 3600
-#define MIN_TIMEZONE -12
-#define MAX_TIMEZONE 14
-
-#define BACKLIGHT_TOGGLE_INTERVAL 500
-#define RESET_INTERVAL 7000
-#define SAVE_INTVERVAL 120000
-
-#define ROTARY_PUSH_DEBOUNCE 55
-#define BUTTON_DEBOUNCE 30
-
-#define FRAMERATE 10
-#define LCD_ADDR 0x27
-#define LCD_ROWS 4
-#define LCD_COLS 20
-#define DEFAULT_BRIGHTNESS 191
-#define LINES 8
-
-#define RECIPIENT "USER"
-#define WAIT_TIME 2000
-#pragma endregion 
-
-#pragma region Globals
-void (*reset)(void) = NULL;
-void startReset();
-void rotaryServiceRoutine();
-unsigned long uptime;
-char daysOfTheWeek[7][10] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
-char months[12][10] = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
-unsigned long lastSaveTime;
-
-enum LINE_NUMS
+#pragma region Main Methods
+void startReset()
 {
-    LINE_1,
-    LINE_2,
-    LINE_3,
-    LINE_4,
-    LINE_5,
-    LINE_6,
-    LINE_7,
-    LINE_8
-};
+    save(true);
+    display.nextLines[LINE_1] = "Resseting...";
+    display.send();
+    delay(500);
+    reset();
+}
 
-enum MEM_ADDRESSES
+void rotaryServiceRoutine()
 {
-    WAS_RESET_ADDRESS,
-    BRIGHTNESS_ADDRESS,
-    TIME_ZONE_ADDRESS,
-    USE_GMT_ADDRESS,
-    USE_SHORT_DATE_ADDRESS,
-    USE_24H_ADDRESS,
-    A1_HOUR_ADDRESS,
-    A1_MINUTE_ADDRESS
-};
-#pragma endregion
+    input.rotary.serviceRoutine();
+}
 
-#pragma region PINS
-struct ROTARYPINS
+void save(bool wasReset)
 {
-    const byte a = 2,
-        b = 3,
-        sw = 4;
-};
-
-struct PINS
-{
-    const byte button = 5,
-        displayBacklight = 7,
-        buzzer = 8;
-    const ROTARYPINS rotary;
-};
-
-const PROGMEM PINS pins;
-#pragma endregion
-
-#pragma region DISPLAY
-struct DISP
-{
-    enum MENUS
+    if (wasReset)
     {
-        CLOCKFACE,
-        SETTINGS,
-            TIME_SETS,
-                SET_TIME,
-            ALARM_SETS,
-        NOTIFICATION
-    };
-
-    LiquidCrystal_I2C display = LiquidCrystal_I2C(LCD_ADDR, LCD_COLS, LCD_ROWS);
-    String nextLines[LINES];
-    byte brightness;
-    byte savedBrightness;
-    unsigned long lastFrameTime;
-    unsigned int frameInterval;
-    MENUS menu = CLOCKFACE;
-    byte pointer;
-    byte scroll;
-    bool editing;
-
-    void setup()
-    {
-        pinMode(pins.displayBacklight, OUTPUT);
-        this->display.init();
-        this->display.setBacklight(BYTE_MAX);
-        this->display.setCursor(ZERO, ZERO);
-        this->frameInterval = 1000/FRAMERATE;
-        this->getSaved();
+        EEPROM.write(WAS_RESET_ADDRESS, 1);
     }
-
-    void send()
-    {
-        if (uptime - lastFrameTime >= frameInterval)
-        {
-            this->lastFrameTime = uptime;
-            analogWrite(pins.displayBacklight, this->brightness);
-
-            if (this->newLines())
-            {
-                this->saveOldLines();
-                this->display.clear();
-
-                if (cursor)
-                    this->nextLines[pointer] = '>' + this->nextLines[pointer];
-
-                this->display.setCursor(ZERO, LINE_1);
-                this->display.print(this->nextLines[LINE_1 + this->scroll]);
-
-                this->display.setCursor(ZERO, LINE_2);
-                this->display.print(this->nextLines[LINE_2 + this->scroll]);
-
-                this->display.setCursor(ZERO, LINE_3);
-                this->display.print(this->nextLines[LINE_3 + this->scroll]);
-
-                this->display.setCursor(ZERO, LINE_4);
-                this->display.print(this->nextLines[LINE_4 + this->scroll]); 
-            }
-        }
-    }
-
-    void next()
-    {
-        byte temp = (byte)this->menu;
-        if (temp == NOTIFICATION)
-            temp = CLOCKFACE;
-        else
-            temp++;
-        this->menu = (MENUS)temp;
-        this->resetSubSettings();
-    }
-
-    void goTo(MENUS go)
-    {
-        this->menu = go;
-        this->resetSubSettings();
-    }
-
-    void getSaved()
-    {
-    this->savedBrightness = EEPROM.read(BRIGHTNESS_ADDRESS);
-    if (this->savedBrightness)
-        this->brightness = this->savedBrightness;
     else
-        this->brightness = DEFAULT_BRIGHTNESS;
+    {
+        EEPROM.update(WAS_RESET_ADDRESS, 0);
     }
 
-    void save()
+    display.save();
+    time.save();
+}
+
+bool getSaved()
+{
+
+}
+
+void setup()
+{
+    bool wasReset = getSaved();
+    input.setup();
+    //time.setup();
+    //display.setup();
+
+    if (wasReset)
     {
-        EEPROM.update(BRIGHTNESS_ADDRESS, savedBrightness);
+
+    }
+    else
+    {
+
     }
 
-    void setLine(String str, byte row)
-    {
-        this->nextLines[row] += str;
-    }
+    Serial.begin(1000000);
 
-    void add(String str, byte row)
+    while (true)
     {
-        this->setLine(this->nextLines[row] + str, row);
-    }
-
-    void quickSet(String str1, String str2, String str3, String str4)
-    {
-        this->clearLines();
-        this->setLine(str1, LINE_1);
-        this->setLine(str2, LINE_2);
-        this->setLine(str3, LINE_3);
-        this->setLine(str4, LINE_4);
-        this->setLine("", LINE_5);
-        this->setLine("", LINE_6);
-        this->setLine("", LINE_7);
-        this->setLine("", LINE_8);
-    }
-
-    void setLineFromRight(String str, byte row)
-    {
-        for (int spaces = 0; spaces < abs(this->nextLines[row].length() - str.length()); spaces++)
-        {
-            this->nextLines[row] += ' ';
-        }
-        this->nextLines[row] += str;
-    }
-
-    void clearLines()
-    {
-        this->nextLines[LINE_1] = "";
-        this->nextLines[LINE_2] = "";
-        this->nextLines[LINE_3] = "";
-        this->nextLines[LINE_4] = "";
-        this->nextLines[LINE_5] = "";
-        this->nextLines[LINE_6] = "";
-        this->nextLines[LINE_7] = "";
-        this->nextLines[LINE_8] = "";
-    }
-
-    void edit()
-    {
-        this->edit(!this->editing);
-    }
-
-    void edit(bool set)
-    {
-        this->editing = set;
-        (set) ? this->display.blink() : this->display.noBlink();
-    }
-
-    void increaseBrightness()
-    {
-        if (this->brightness != BYTE_MAX)
-        {
-            this->brightness++;
-        }
-    }
-
-    void decreaseBrightness()
-    {
-        if (this->brightness > ZERO)
-        {
-            this->brightness--;
-        }
-    }
-
-    void movePointerUp()
-    {
-        if (this->pointer != LINE_1)
-        {
-            this->pointer--;
-        }
-        else
-        {
-            this->pointer = this->getLastLine();
-        }
-    }
-
-    void movePointerDown()
-    {
-        byte last = this->getLastLine();
-        if (this->pointer != last )
-        {
-            this->pointer++;
-        }
-        else
-        {
-            this->pointer = LINE_1;
-        }
-    }
-private:
-    void resetSubSettings()
-    {
-        this->pointer = LINE_1;
-        this->scroll = LINE_1;
-        this->cursor = false;
-    }
-
-    void saveOldLines()
-    {
-        this->oldLines[LINE_1] = this->nextLines[LINE_1];
-        this->oldLines[LINE_2] = this->nextLines[LINE_2];
-        this->oldLines[LINE_3] = this->nextLines[LINE_3];
-        this->oldLines[LINE_4] = this->nextLines[LINE_4];
-        this->oldLines[LINE_5] = this->nextLines[LINE_5];
-        this->oldLines[LINE_6] = this->nextLines[LINE_6];
-        this->oldLines[LINE_7] = this->nextLines[LINE_7];
-        this->oldLines[LINE_8] = this->nextLines[LINE_8];
-    }
-
-    bool newLines()
-    {
-        if (this->nextLines[LINE_1] != this->oldLines[LINE_1] || this->nextLines[LINE_2] != this->oldLines[LINE_2] || this->nextLines[LINE_3] != this->oldLines[LINE_3] || this->nextLines[LINE_4] != this->oldLines[LINE_4]
-         || this->nextLines[LINE_5] != this->oldLines[LINE_5] || this->nextLines[LINE_6] != this->oldLines[LINE_6] || this->nextLines[LINE_7] != this->oldLines[LINE_7] || this->nextLines[LINE_8] != this->oldLines[LINE_8]
-        )
-            return true;
-        else
-            return false;
+        uptime = millis();
+        //input.update();
+        Serial.println(input.rotary.getState());
     }
     
-    byte getLastLine()
+    delay(WAIT_TIME);
+}
+
+#pragma region Menu Methods
+void menuSwitch()
+{
+
+}
+
+void clockface()
+{
+    display.clearLines();
+    display.setLine(RECIPIENT, LINE_1);
+
+    display.setLine(String((time.use24Hour) ? ((time.useGMT) ? time.GMT.hour() : time.GMT.twelveHour() ) : ((time.useGMT ? time.localTime.hour(): time.localTime.twelveHour()))), LINE_2);
+    display.add(":", LINE_2);
+    display.add(String(time.localTime.minute()), LINE_2);
+    display.add(":", LINE_2);
+    display.add(String(time.localTime.second()), LINE_2);
+
+    display.setLine(daysOfTheWeek[(time.useGMT) ? time.GMT.dayOfTheWeek() : time.localTime.dayOfTheWeek()], LINE_3);
+
+    if (time.useShortDate)
     {
-        for (byte line = LINE_8; line < LINE_1; line--)
+        if (time.useGMT)
         {
-            if (this->nextLines[line] != "")
+            display.setLine(String(time.GMT.month()), LINE_4);
+            display.add(":", LINE_4);
+            display.add(String(time.GMT.day()), LINE_4);
+            display.add(":", LINE_4);
+            display.add(String(time.GMT.year()), LINE_4);
+        }
+        else
+        {
+            display.setLine(String(time.localTime.month()), LINE_4);
+            display.add(":", LINE_4);
+            display.add(String(time.localTime.day()), LINE_4);
+            display.add(":", LINE_4);
+            display.add(String(time.localTime.year()), LINE_4);
+        }
+    }
+    else
+    {
+        if (time.useGMT)
+        {
+            display.setLine(String(months[time.GMT.month() - 1]), LINE_4);
+            display.add(" ", LINE_4);
+            display.add(String(time.GMT.day()), LINE_4);
+            display.add(" ", LINE_4);
+            display.add(String(time.GMT.year()), LINE_4);
+        }
+        else
+        {
+            display.setLine(String(months[time.localTime.month() - 1]), LINE_4);
+            display.add(" ", LINE_4);
+            display.add(String(time.localTime.day()), LINE_4);
+            display.add(" ", LINE_4);
+            display.add(String(time.localTime.year()), LINE_4);
+        }
+    }
+
+    if (input.backPress()) display.next();
+
+    display.send();
+}
+
+void settings()
+{
+    display.clearLines();
+    display.quickSet
+    (
+        "TIME SETTINGS",
+        "ALARM SETTINGS",
+        "BRIGHTNESS",
+        ""
+    );
+
+    display.setLineFromRight(String(display.brightness), LINE_3);
+
+    if (input.rotaryPush.pressed())
+    {
+        switch (display.pointer)
+        {
+        case LINE_1: display.goTo(display.TIME_SETS);
+            break;
+        case LINE_2: display.goTo(display.ALARM_SETS);
+            break;
+        case LINE_3: display.edit();
+            break;
+        default:
+            break;
+        }
+    }
+    
+    switch (input.rotaryState)
+    {
+    case ROTARYSTATES::CLOCKWISE:
+        if (display.editing && display.pointer == LINE_3) display.increaseBrightness();
+        if (!display.editing) display.movePointerDown();
+        break;
+    case ROTARYSTATES::COUNTER_CLOCKWISE:
+        if (display.editing && display.pointer == LINE_3) display.decreaseBrightness();
+        if (!display.editing) display.movePointerUp();
+        break;
+    default:
+        break;
+    }
+
+    if (input.backPress()) display.goTo(display.CLOCKFACE);
+
+    display.send();
+}
+
+void timeSettings()
+{
+    display.clearLines();
+    display.setLine("SET TIME", LINE_1);
+    display.setLine("USE 24 HOUR", LINE_2);
+    display.setLineFromRight(boolToString(time.use24Hour), LINE_2);
+    display.setLine("USE GMT", LINE_3);
+    display.setLineFromRight(boolToString(time.useGMT), LINE_3);
+    display.setLine("TIMEZONE", LINE_4);
+    display.setLineFromRight(String(time.timeZone), LINE_4);
+
+    if (input.rotaryPush.pressed())
+    {
+        switch (display.pointer)
+        {
+        case LINE_1:
+            display.goTo(display.SET_TIME);
+            break;
+        case LINE_2:
+        case LINE_3:
+        case LINE_4:
+            display.edit();
+            break;
+        default:
+            break;
+        }
+    }
+    
+    switch (input.rotaryState)
+    {
+    case COUNTER_CLOCKWISE:
+        if (display.editing)
+        {
+            switch (display.pointer)
             {
-                return line;
+            case LINE_2:
+                time.use24Hour = false;
+                break;
+            case LINE_3:
+                time.useGMT = false;
+                break;
+            case LINE_4:
+                time.decreaseTimeZone();
+                break;
+            default:
+                break;
             }
         }
+        else
+        {
+            display.movePointerUp();
+        }
+        break;
+    case CLOCKWISE:
+        if (display.editing)
+        {
+            switch (display.pointer)
+            {
+            case LINE_2:
+                time.use24Hour = true;
+                break;
+            case LINE_3:
+                time.useGMT = true;
+                break;
+            case LINE_4:
+                time.increaseTimeZone();
+                break;
+            default:
+                break;
+            }
+        }
+        else
+        {
+            display.movePointerDown();
+        }
+        break;   
+    default:
+        break;
     }
-    
-    String oldLines[LINES];
-    bool cursor;
-};
 
-DISP display;
+    if (input.backPress()) display.goTo(display.SETTINGS);
+
+    display.send();
+}
+
+void setTime()
+{
+    DateTime newTime = time.localTime;
+    display.clearLines();
+    display.setLine("SET HOUR", LINE_1);
+	display.setLineFromRight(String(newTime.hour()), LINE_1);
+	display.setLine("SET MINUTE", LINE_2);
+	display.setLineFromRight(String(newTime.minute()), LINE_2);
+	display.setLine("SET SECOND", LINE_3);
+	display.setLineFromRight(String(newTime.second), LINE_3);
+	display.setLine("SET MONTH", LINE_4);
+	display.setLineFromRight(String(newTime.month()), LINE_4);
+	display.setLine("SET DAY", LINE_5);
+	diaplay.setLineFromRight(String(newTime.day()), LINE_5);
+	display.setLine("SET YEAR", LINE_6);
+	display.setLineFromRight(String(newTime.year()), LINE_6);
+	
+	switch(input.rotaryState)
+	{
+		case COUNTER_CLOCKWISE:
+			if (display.editing)
+			{
+				switch(display.pointer)
+				{
+					case LINE_1:
+						changeHour(&newTime, newTime.second() + 1);
+						break;
+					case LINE_2:
+						break;
+					case LINE_3:
+						break;
+					case LINE_4:
+						break;
+					case LINE_5:
+						break;
+					case LINE_6:
+						break;
+					default:
+						break;
+				}
+			}
+			else
+			{
+				display.movePointerUp();
+			}
+			break;
+		case CLOCKWISE:
+			if (display.editing)
+			{
+				switch(display.pointer)
+				{
+					case LINE_1:
+						break;
+					case LINE_2:
+						break;
+					case LINE_3:
+						break;
+					case LINE_4:
+						break;
+					case LINE_5:
+						break;
+					case LINE_6:
+						break;
+					default:
+						break;
+				}
+			}
+			else
+			{
+				display.movePointerDown();
+			}
+			break;
+		default:
+			break;
+	}
+	
+	if(newTime.isValid())
+		if (newTime != time.localTime)
+			time.rtc.adjust(newTime);
+		
+    display.send();
+}
+
+void notification()
+{
+    display.clearLines();
+    display.send();
+
+    if (input.button.released()) display.menu = display.CLOCKFACE;
+}
 #pragma endregion
 
-#pragma region INPUT
-struct _INPUT
+void loop()
 {
-    Rotary rotary = Rotary(true, INPUT_PULLUP, pins.rotary.a, pins.rotary.b);
-    Push rotaryPush = Push(pins.rotary.sw, INPUT_PULLUP, ROTARY_PUSH_DEBOUNCE);
-    Push button = Push(pins.button, INPUT_PULLUP, BUTTON_DEBOUNCE);
-
-    ROTARYSTATES rotaryState;
-
-    void setup()
+    uptime = millis();
+    time.update();
+    input.update();
+    menuSwitch();
+    if (uptime - lastSaveTime >= SAVE_INTVERVAL)
     {
-        addInterrupt(pins.rotary.a, rotaryServiceRoutine, this->rotary.mode);
+        save(false);
     }
-
-    void update()
-    {
-        this->rotaryPush.update();
-        this->button.update();
-        this->rotaryState = (ROTARYSTATES)this->rotary.getState();
-        if (this->button.released())
-        {
-            unsigned int holdTime = this->button.getReleasedHoldTime();
-            if (holdTime >= BACKLIGHT_TOGGLE_INTERVAL)
-            {
-                if (!display.brightness)
-                {
-                    display.brightness = display.savedBrightness;
-                }
-                else
-                {
-                    display.savedBrightness = display.brightness;
-                    display.brightness = ZERO;
-                }
-            }
-
-            if (holdTime >= RESET_INTERVAL)
+}
+#pragma endregion >= RESET_INTERVAL)
             {
                 startReset();
             }
@@ -776,8 +784,9 @@ void setTime()
 			break;
 	}
 	
-	if (newTime != time.localTime)
-		time.rtc.adjust(newTime);
+	if(newTime.isValid())
+		if (newTime != time.localTime)
+			time.rtc.adjust(newTime);
 		
     display.send();
 }
@@ -788,6 +797,59 @@ void notification()
     display.send();
 
     if (input.button.released()) display.menu = display.CLOCKFACE;
+}
+#pragma endregion
+
+void loop()
+{
+    uptime = millis();
+    time.update();
+    input.update();
+    menuSwitch();
+    if (uptime - lastSaveTime >= SAVE_INTVERVAL)
+    {
+        save(false);
+    }
+}
+#pragma endregion	}
+			}
+			else
+			{
+				display.movePointerDown();
+			}
+			break;
+		default:
+			break;
+	}
+	
+	if(newTime.isValid())
+		if (newTime != time.localTime)
+			time.rtc.adjust(newTime);
+		
+    display.send();
+}
+
+void notification()
+{
+    display.clearLines();
+    display.send();
+
+    if (input.button.released()) display.menu = display.CLOCKFACE;
+}
+#pragma endregion
+
+void loop()
+{
+    uptime = millis();
+    time.update();
+    input.update();
+    menuSwitch();
+    if (uptime - lastSaveTime >= SAVE_INTVERVAL)
+    {
+        save(false);
+    }
+}
+#pragma endregionased()) display.menu = display.CLOCKFACE;
 }
 #pragma endregion
 
