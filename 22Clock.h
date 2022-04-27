@@ -39,10 +39,12 @@
 #define LINES 8
 #define BLINK_INTERVAL 1000
 
-#define RECIPIENT "USER"
+#define USER "USER"
 #define WAIT_TIME 2000
 
 #define TIME_RECV_ADDR 1
+#define TIME_SEND_ADDR 1
+#define TIME_SEND_INTERVAL 500
 
 #define isBetweenInclude(low, val, high) low <= val && val <= high
 #define isBetween(low, val, high) low < val && val < high
@@ -92,8 +94,9 @@ char months[12][10] = { "January", "February", "March", "April", "May", "June", 
 void (*reset)(void) = NULL;
 void startReset();
 void rotaryServiceRoutine();
-unsigned long uptime;
-unsigned long lastSaveTime;
+unsigned long uptime = ZERO;
+unsigned long lastSaveTime = ZERO;
+unsigned long lastSendTime = ZERO;
 
 enum LINE_NUMS
 {

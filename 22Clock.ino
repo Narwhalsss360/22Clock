@@ -36,7 +36,9 @@ void save(bool wasReset)
 
 bool getSaved()
 {
-
+    display.getSaved();
+    time.getSaved();
+    return (EEPROM.read(WAS_RESET_ADDRESS) > 0) ? true : false;
 }
 
 void done(unsigned int addr, unsigned long data)
@@ -44,6 +46,7 @@ void done(unsigned int addr, unsigned long data)
     if (addr == TIME_RECV_ADDR)
     {
         time.localTime = DateTime(data);
+        display.clearLines();
         display.quickSet
         (
             "TIME RECEIVED",
@@ -60,6 +63,11 @@ void serialEvent()
     SerialCom.onSerialEvent(&done, NULL);
 }
 
+void sendTime()
+{
+    SerialCom.send(TIME_SEND_ADDR, time.localTime.unixtime());
+}
+
 void setup()
 {
     bool wasReset = getSaved();
@@ -69,7 +77,30 @@ void setup()
 
     Serial.begin(SERIALCOM_BAUD);
 
+    display.clearLines();
+    if (wasReset)
+    {
+        display.quickSet
+        (
+            "Welcome",
+            USER,
+            "Was reset.",
+            ""
+        );
+    }
+    else
+    {
+        display.quickSet
+        (
+            "Welcome",
+            USER,
+            "",
+            ""
+        );
+    }
+    display.goTo(display.NOTIFICATION);
     //delay(WAIT_TIME);
+    display.goTo(display.CLOCKFACE);
 }
 
 #pragma region Menu Methods
@@ -105,7 +136,7 @@ void menuSwitch()
 void clockface()
 {
     display.clearLines();
-    display.setLine(RECIPIENT, LINE_1);
+    display.setLine(USER, LINE_1);
 
     display.setLine(String((time.use24Hour) ? ((time.useGMT) ? time.GMT.hour() : time.GMT.twelveHour() ) : ((time.useGMT ? time.localTime.hour(): time.localTime.twelveHour()))), LINE_2);
     display.add(":", LINE_2);
@@ -491,6 +522,11 @@ void loop()
     time.update();
     input.update();
     menuSwitch();
+    if (uptime - lastSendTime >= TIME_SEND_INTERVAL)
+    {
+        lastSendTime = uptime;
+        sendTime();
+    }
     if (uptime - lastSaveTime >= SAVE_INTVERVAL)
     {
         save(false);
