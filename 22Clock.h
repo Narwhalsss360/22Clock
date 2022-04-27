@@ -21,10 +21,13 @@
 #define MIN_TIMEZONE -12
 #define MAX_TIMEZONE 14
 
+#define BUZZER_INTERVAL 500
+
 #define BACKLIGHT_TOGGLE_INTERVAL 500
 #define RESET_INTERVAL 7000
 #define SAVE_INTVERVAL 120000
 
+#define ROTARY_IGNORE_TIME 60
 #define ROTARY_PUSH_DEBOUNCE 55
 #define BUTTON_DEBOUNCE 30
 
@@ -34,11 +37,13 @@
 #define LCD_COLS 20
 #define DEFAULT_BRIGHTNESS 191
 #define LINES 8
+#define BLINK_INTERVAL 1000
 
 #define RECIPIENT "USER"
 #define WAIT_TIME 2000
 
 #define isBetweenInclude(low, val, high) low <= val && val <= high
+#define isBetween(low, val, high) low < val && val < high
 #pragma endregion
 
 #pragma region Change DateTime
@@ -149,12 +154,15 @@ struct DISP
     String nextLines[LINES];
     byte brightness;
     byte savedBrightness;
+    unsigned long lastBlink = ZERO;
     unsigned long lastFrameTime;
     unsigned int frameInterval;
     MENUS menu = CLOCKFACE;
-    byte pointer;
-    byte scroll;
-    bool editing;
+    byte pointer = ZERO;
+    byte scroll = ZERO;
+    bool editing = false;
+    bool cursor;
+    byte cursorCol;
 
     void setup()
     {
@@ -168,18 +176,18 @@ struct DISP
 
     void send()
     {
-        if (uptime - lastFrameTime >= frameInterval)
+        if (uptime - this->lastFrameTime >= this->frameInterval)
         {
             this->lastFrameTime = uptime;
             analogWrite(pins.displayBacklight, this->brightness);
+
+            if (cursor)
+                    this->cursorCol = this->addPointer(this->pointer);
 
             if (this->newLines())
             {
                 this->saveOldLines();
                 this->display.clear();
-
-                if (cursor)
-                    this->nextLines[pointer] = '>' + this->nextLines[pointer];
 
                 this->display.setCursor(ZERO, LINE_1);
                 this->display.print(this->nextLines[LINE_1 + this->scroll]);
@@ -191,7 +199,10 @@ struct DISP
                 this->display.print(this->nextLines[LINE_3 + this->scroll]);
 
                 this->display.setCursor(ZERO, LINE_4);
-                this->display.print(this->nextLines[LINE_4 + this->scroll]); 
+                this->display.print(this->nextLines[LINE_4 + this->scroll]);
+                
+                if (this->cursor)
+                    display.setCursor(this->cursorCol, this->pointer);
             }
         }
     }
@@ -229,7 +240,7 @@ struct DISP
 
     void setLine(String str, byte row)
     {
-        this->nextLines[row] += str;
+        this->nextLines[row] = str;
     }
 
     void add(String str, byte row)
@@ -252,7 +263,8 @@ struct DISP
 
     void setLineFromRight(String str, byte row)
     {
-        for (int spaces = 0; spaces < abs(this->nextLines[row].length() - str.length()); spaces++)
+        byte count = LCD_COLS - this->nextLines[row].length() - str.length();
+        for (byte spaces = ZERO; spaces < count; spaces++)
         {
             this->nextLines[row] += ' ';
         }
@@ -300,26 +312,37 @@ struct DISP
 
     void movePointerUp()
     {
-        if (this->pointer != LINE_1)
+        if (this->pointer > LINE_1)
         {
             this->pointer--;
+            if (this->pointer < LINE_4)
+            {
+                this->scroll = 0;
+            }
         }
         else
         {
             this->pointer = this->getLastLine();
+            if (this->pointer > LINE_4)
+                this->scroll = 4;
         }
     }
 
     void movePointerDown()
     {
         byte last = this->getLastLine();
-        if (this->pointer != last )
+        if (this->pointer < last )
         {
             this->pointer++;
+            if (pointer > LINE_4)
+            {
+                this->scroll = 4;
+            }
         }
         else
         {
             this->pointer = LINE_1;
+            this->scroll = ZERO;
         }
     }
 private:
@@ -354,7 +377,7 @@ private:
     
     byte getLastLine()
     {
-        for (byte line = LINE_8; line < LINE_1; line--)
+        for (byte line = LINE_8; line != LINE_1; line--)
         {
             if (this->nextLines[line] != "")
             {
@@ -362,9 +385,30 @@ private:
             }
         }
     }
-    
+
+    byte addPointer(byte row)
+    {
+        if (this->nextLines[row].length() == 20)
+        {
+            for (byte col = LCD_COLS - 1; col > ZERO; col--)
+            {
+                if (col != 0)
+                {
+                    if (this->nextLines[row][col] == ' ')
+                    {
+                        this->nextLines[row][col] = '>';
+                        return col;
+                    }
+                }
+            }
+        }
+        else
+        {
+            this->nextLines[row] += '<';
+        }
+    }
+
     String oldLines[LINES];
-    bool cursor;
 };
 
 DISP display;
@@ -378,6 +422,8 @@ struct _INPUT
     Push button = Push(pins.button, INPUT_PULLUP, BUTTON_DEBOUNCE);
 
     ROTARYSTATES rotaryState;
+
+    unsigned long lastRotaryCheck = ZERO;
 
     void setup()
     {
@@ -411,14 +457,6 @@ struct _INPUT
             }
         }
     }
-
-    bool backPress()
-    {
-        if (this->button.released() && this->button.getReleasedHoldTime() < BACKLIGHT_TOGGLE_INTERVAL)
-            return true;
-        else
-            return false;
-    }
 };
 
 _INPUT input;
@@ -433,6 +471,7 @@ struct TIME
     byte alarmHour = ZERO;
     byte alarmMinute = ZERO;
     bool alarm = false;
+    bool fired = false;
     int timeZone = ZERO;
     bool autoOff = true;
     bool useGMT = false;
@@ -459,6 +498,32 @@ struct TIME
     {
         this->localTime = this->rtc.now();
         this->GMT = DateTime(this->localTime.unixtime() + (this->timeZone*SECONDS_IN_HOUR));
+    
+        if (this->localTime.hour() == this->alarmHour)
+        {
+            if (this->localTime.minute() == this->alarmMinute)
+            {
+                this->fired = true;
+            }
+        }
+
+        if (this->fired)
+        {
+            display.quickSet
+            (
+                "ALARM",
+                "PRESS BUTTON",
+                (String(this->alarmHour) + ':' + String(this->alarmMinute)),
+                ""
+            );
+            display.goTo(display.NOTIFICATION);
+            this->buzz();
+            if (input.button.current()) 
+            {
+                this->fired = false;
+                digitalWrite(pins.buzzer, LOW);
+            }
+        }
     }
 
     void decreaseTimeZone()
@@ -489,6 +554,19 @@ struct TIME
         EEPROM.update(USE_SHORT_DATE_ADDRESS, (this->useShortDate) ? 1 : 0);
         EEPROM.update(A1_HOUR_ADDRESS, this->alarmHour);
         EEPROM.update(A1_MINUTE_ADDRESS, this->alarmMinute);
+    }
+private:
+    unsigned long lastBuzz;
+    bool currentBuzz = false;
+
+    void buzz()
+    {
+        if (uptime - this->lastBuzz >= BUZZER_INTERVAL)
+        {
+            this->lastBuzz = uptime;
+            this->currentBuzz = !this->currentBuzz;
+            digitalWrite(pins.buzzer, this->currentBuzz);
+        }
     }
 };
 
