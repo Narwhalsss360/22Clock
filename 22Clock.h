@@ -27,7 +27,7 @@
 #define RESET_INTERVAL 7000
 #define SAVE_INTVERVAL 120000
 
-#define ROTARY_IGNORE_TIME 80
+#define ROTARY_DEBOUNCE 100
 #define ROTARY_PUSH_DEBOUNCE 55
 #define BUTTON_DEBOUNCE 30
 
@@ -423,7 +423,7 @@ DISP display;
 #pragma region INPUT
 struct _INPUT
 {
-    Rotary rotary = Rotary(true, INPUT_PULLUP, pins.rotary.a, pins.rotary.b);
+    Rotary rotary = Rotary(pins.rotary.a, pins.rotary.b, true, INPUT_PULLUP, ROTARY_DEBOUNCE);
     Push rotaryPush = Push(pins.rotary.sw, INPUT_PULLUP, ROTARY_PUSH_DEBOUNCE);
     Push button = Push(pins.button, INPUT_PULLUP, BUTTON_DEBOUNCE);
 
@@ -544,7 +544,7 @@ struct TIME
 
     void getSaved()
     {
-        this->timeZone = EEPROM.read(TIME_ZONE_ADDRESS) - MIN_TIMEZONE;
+        this->timeZone = EEPROM.read(TIME_ZONE_ADDRESS) + MIN_TIMEZONE;
         this->useGMT = (EEPROM.read(USE_GMT_ADDRESS) > 0) ? true : false;
         this->use24Hour = (EEPROM.read(USE_24H_ADDRESS) > 0) ? true : false;
         this->useShortDate = (EEPROM.read(USE_SHORT_DATE_ADDRESS) > 0) ? true : false;

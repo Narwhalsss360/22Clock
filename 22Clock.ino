@@ -11,12 +11,7 @@ void startReset()
 
 void rotaryServiceRoutine()
 {
-    uptime = millis();
-    if (uptime - input.lastRotaryCheck >= ROTARY_IGNORE_TIME)
-    {
-        input.lastRotaryCheck = uptime;
-        input.rotary.serviceRoutine();
-    }
+    input.rotary.serviceRoutine();
 }
 
 void save(bool wasReset)
