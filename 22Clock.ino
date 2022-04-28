@@ -123,7 +123,11 @@ void menuSwitch()
     case display.ALARM_SETS:
         setAlarm();
         break;
+    case display.NOTIFICATION:
+        notification();
+        break;
     default:
+    
         break;
     }
 }
@@ -444,65 +448,58 @@ void setAlarm()
     if (input.rotaryPush.pressed())
         display.edit();
 
-    if (display.editing)
+    switch (input.rotaryState)
     {
-        switch (input.rotaryState)
+    case COUNTER_CLOCKWISE:
+        if (display.editing)
         {
-        case COUNTER_CLOCKWISE:
             switch (display.pointer)
             {
             case LINE_1:
                 time.alarm = false;
                 break;
             case LINE_2:
-                if (time.alarmHour > HR_MIN)
-                    time.alarmHour--;
+                time.decreaseAlarmHour();
                 break;
             case LINE_3:
-                if (time.alarmMinute > MIN_MIN)
-                    time.alarmMinute--;
+                time.decreaseAlarmMinute();
                 break;
             default:
                 break;
             }
-            break;
-        case CLOCKWISE:
+        }
+        else
+        {
+            display.movePointerUp();
+        }
+        break;
+    case CLOCKWISE:
+        if (display.editing)
+        {
             switch (display.pointer)
             {
             case LINE_1:
                 time.alarm = true;
                 break;
             case LINE_2:
-                if (time.alarmHour < HR_MIN)
-                    time.alarmHour++;
+                time.increaseAlarmHour();
                 break;
             case LINE_3:
-                if (time.alarmMinute < MIN_MIN)
-                    time.alarmMinute++;
+                time.increaseAlarmMinute();
                 break;
             default:
                 break;
             }
-            break;
-        default:
-            break;
         }
-    }
-    else
-    {
-        switch (input.rotaryState)
+        else
         {
-        case COUNTER_CLOCKWISE:
-            display.movePointerUp();
-            break;
-        case CLOCKWISE:
             display.movePointerDown();
-            break;
-        default:
-            break;
         }
+        break;
+    default:
+        break;
     }
-    
+
     if (input.button.pressed())
         display.goTo(display.SETTINGS);
 

@@ -509,7 +509,10 @@ struct TIME
         {
             if (this->localTime.minute() == this->alarmMinute)
             {
-                this->fired = true;
+                if (isBetweenInclude(ZERO, this->localTime.second(), 5))
+                {
+                    this->fired = true;
+                }
             }
         }
 
@@ -560,6 +563,31 @@ struct TIME
         EEPROM.update(USE_SHORT_DATE_ADDRESS, (this->useShortDate) ? 1 : 0);
         EEPROM.update(A1_HOUR_ADDRESS, this->alarmHour);
         EEPROM.update(A1_MINUTE_ADDRESS, this->alarmMinute);
+    }
+
+    void decreaseAlarmHour()
+    {
+        if (this->alarmHour > HR_MIN)
+            this->alarmHour--;
+
+    }
+
+    void increaseAlarmHour()
+    {
+        if (this->alarmHour < HR_MAX)
+            this->alarmHour++;
+    }
+
+    void decreaseAlarmMinute()
+    {
+        if (this->alarmMinute > MIN_MIN)
+            this->alarmMinute--;
+    }
+
+    void increaseAlarmMinute()
+    {
+        if (this->alarmMinute < MIN_MAX)
+            this->alarmMinute++;
     }
 private:
     unsigned long lastBuzz;

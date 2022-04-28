@@ -23,7 +23,7 @@ CLOCKFACE
     ]BRIGHTNESS     ->VAL
     ]
 NOTIFICATION
-]N1
-]N2
-]N3
-]N4
+    ]N1
+    ]N2
+    ]N3
+    N4
