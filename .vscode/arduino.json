@@ -2,5 +2,6 @@
     "configuration": "cpu=atmega328",
     "board": "arduino:avr:nano",
     "programmer": "arduino:arduinoisp",
-    "sketch": "22Clock.ino"
+    "sketch": "22Clock.ino",
+    "port": "COM13"
 }

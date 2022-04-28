@@ -138,11 +138,17 @@ void clockface()
     display.clearLines();
     display.setLine(USER, LINE_1);
 
-    display.setLine(String((time.use24Hour) ? ((time.useGMT) ? time.GMT.hour() : time.GMT.twelveHour() ) : ((time.useGMT ? time.localTime.hour(): time.localTime.twelveHour()))), LINE_2);
+    display.setLine(String((time.use24Hour) ? ((time.useGMT) ? time.GMT.hour() : time.localTime.hour()) : ((time.useGMT) ? time.GMT.twelveHour() : time.localTime.twelveHour())) , LINE_2);
     display.add(":", LINE_2);
     display.add(String(time.localTime.minute()), LINE_2);
     display.add(":", LINE_2);
     display.add(String(time.localTime.second()), LINE_2);
+
+    if (!time.use24Hour)
+        if (time.useGMT)
+            display.add((time.GMT.isPM()) ? " PM" : " AM", LINE_2);
+        else
+            display.add((time.localTime.isPM()) ? " PM" : " AM", LINE_2);
 
     display.setLine(daysOfTheWeek[(time.useGMT) ? time.GMT.dayOfTheWeek() : time.localTime.dayOfTheWeek()], LINE_3);
 
@@ -503,7 +509,7 @@ void setAlarm()
     }
     
     if (input.button.pressed())
-        display.goTo(display.CLOCKFACE);
+        display.goTo(display.SETTINGS);
 
     display.send();
 }
