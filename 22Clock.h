@@ -119,7 +119,8 @@ enum MEM_ADDRESSES
     USE_SHORT_DATE_ADDRESS,
     USE_24H_ADDRESS,
     A1_HOUR_ADDRESS,
-    A1_MINUTE_ADDRESS
+    A1_MINUTE_ADDRESS,
+    A1_ENABLE_ADDRESS
 };
 #pragma endregion
 
@@ -551,6 +552,7 @@ struct TIME
         this->useGMT = (EEPROM.read(USE_GMT_ADDRESS) > 0) ? true : false;
         this->use24Hour = (EEPROM.read(USE_24H_ADDRESS) > 0) ? true : false;
         this->useShortDate = (EEPROM.read(USE_SHORT_DATE_ADDRESS) > 0) ? true : false;
+        this->alarm = (EEPROM.read(A1_ENABLE_ADDRESS) > 0) ? true : false;
         this->alarmHour = EEPROM.read(A1_HOUR_ADDRESS);
         this->alarm = EEPROM.read(A1_MINUTE_ADDRESS);
     }
@@ -563,6 +565,7 @@ struct TIME
         EEPROM.update(USE_SHORT_DATE_ADDRESS, (this->useShortDate) ? 1 : 0);
         EEPROM.update(A1_HOUR_ADDRESS, this->alarmHour);
         EEPROM.update(A1_MINUTE_ADDRESS, this->alarmMinute);
+        EEPROM.update(A1_ENABLE_ADDRESS-> (this->alarm) ? 1 : 0 );
     }
 
     void decreaseAlarmHour()
