@@ -565,7 +565,7 @@ struct TIME
         EEPROM.update(USE_SHORT_DATE_ADDRESS, (this->useShortDate) ? 1 : 0);
         EEPROM.update(A1_HOUR_ADDRESS, this->alarmHour);
         EEPROM.update(A1_MINUTE_ADDRESS, this->alarmMinute);
-        EEPROM.update(A1_ENABLE_ADDRESS-> (this->alarm) ? 1 : 0 );
+        EEPROM.update(A1_ENABLE_ADDRESS, (this->alarm) ? 1 : 0 );
     }
 
     void decreaseAlarmHour()
