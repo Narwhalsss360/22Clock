@@ -5,21 +5,24 @@
 #include <EEPROM.h>
 
 #pragma region Defenitions
-#define SEC_MIN ZERO
-#define SEC_MAX 59
-#define MIN_MIN ZERO
-#define MIN_MAX 59
-#define HR_MIN ZERO
-#define HR_MAX 23
-#define DAY_MIN 1
-#define DAY_MAX 31
-#define MON_MIN 1
-#define MON_MAX 12
-#define YR_MIN 1970
-#define YR_MAX 2036
+#define SECONDS_MINIMUM ZERO
+#define SECONDS_MAXIMUM 59
+#define MINUTES_MINIMUM ZERO
+#define MINUTES_MAXIMUM 59
+#define HOURS_MINIMUM ZERO
+#define HOURS_MAXIMUM 23
+#define DAYS_MINIMUM 1
+#define DAYS_MAXIMUM 31
+#define MONTHS_MINIMUM 1
+#define MONTHS_MAXIMUM 12
+#define YEARS_MINIMUM 1970
+#define YEARS_MAXIMUM 2038
 #define SECONDS_IN_HOUR 3600
-#define MIN_TIMEZONE -12
-#define MAX_TIMEZONE 14
+#define TIMEZONE_MINIMUM -12
+#define TIMEZONE_MAXIMUM 14
+#define TIME_RECV_ADDR 1
+#define TIME_SEND_ADDR 1
+#define TIME_SEND_INTERVAL 500
 
 #define BUZZER_INTERVAL 500
 
@@ -31,20 +34,16 @@
 #define ROTARY_PUSH_DEBOUNCE 55
 #define BUTTON_DEBOUNCE 30
 
-#define FRAMERATE 10
+#define LCD_FRAMERATE 10
 #define LCD_ADDR 0x27
 #define LCD_ROWS 4
 #define LCD_COLS 20
-#define DEFAULT_BRIGHTNESS 191
-#define LINES 8
-#define BLINK_INTERVAL 1000
+#define LCD_DEFAULT_BRIGHTNESS 191
+#define LCD_LINES 8
+#define LCD_BLINK_INTERVAL 1000
 
 #define USER "USER"
-#define WAIT_TIME 2000
-
-#define TIME_RECV_ADDR 1
-#define TIME_SEND_ADDR 1
-#define TIME_SEND_INTERVAL 500
+#define START_WAIT_TIME 2000
 
 #define isBetweenInclude(low, val, high) low <= val && val <= high
 #define isBetween(low, val, high) low < val && val < high
@@ -53,37 +52,37 @@
 #pragma region Change DateTime
 void changeSecond(DateTime* pDt, byte newSec)
 {
-	if (isBetweenInclude(SEC_MIN, newSec, SEC_MAX))
+	if (isBetweenInclude(SECONDS_MINIMUM, newSec, SECONDS_MAXIMUM))
 	    *pDt = DateTime(pDt->year(), pDt->month(), pDt->day(), pDt->hour(), pDt->minute(), newSec);
 }
 
 void changeMinute(DateTime* pDt, byte newMin)
 {
-	if (isBetweenInclude(MIN_MIN, newMin, MIN_MAX))
+	if (isBetweenInclude(MINUTES_MINIMUM, newMin, MINUTES_MAXIMUM))
 	    *pDt = DateTime(pDt->year(), pDt->month(), pDt->day(), pDt->hour(), newMin, pDt->second());
 }
 
 void changeHour(DateTime* pDt, byte newHr)
 {
-	if (isBetweenInclude(HR_MIN, newHr, HR_MAX))
+	if (isBetweenInclude(HOURS_MINIMUM, newHr, HOURS_MAXIMUM))
         *pDt = DateTime(pDt->year(), pDt->month(), pDt->day(), newHr, pDt->minute(), pDt->second());
 }
 
 void changeDay(DateTime* pDt, byte newDay)
 {
-	if(isBetweenInclude(DAY_MIN, newDay, DAY_MAX))
+	if(isBetweenInclude(DAYS_MINIMUM, newDay, DAYS_MAXIMUM))
 	    *pDt = DateTime(pDt->year(), pDt->month(), newDay, pDt->hour(), pDt->minute(), pDt->second());
 }
 
 void changeMonth(DateTime* pDt, byte newMon)
 {
-	if (isBetweenInclude(MON_MIN, newMon, MON_MAX))
+	if (isBetweenInclude(MONTHS_MINIMUM, newMon, MONTHS_MAXIMUM))
 	    *pDt = DateTime(pDt->year(), newMon, pDt->day(), pDt->hour(), pDt->minute(), pDt->second());
 }
 
 void changeYear(DateTime* pDt, unsigned short newYr)
 {
-	if (isBetweenInclude(YR_MIN, newYr, YR_MAX))
+	if (isBetweenInclude(YEARS_MINIMUM, newYr, YEARS_MAXIMUM))
 	    *pDt = DateTime(newYr, pDt->month(), pDt->day(), pDt->hour(), pDt->minute(), pDt->second());
 }
 #pragma endregion
@@ -91,12 +90,11 @@ void changeYear(DateTime* pDt, unsigned short newYr)
 #pragma region Globals
 char daysOfTheWeek[7][10] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
 char months[12][10] = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
-void (*reset)(void) = NULL;
-void startReset();
+void reset();
 void rotaryServiceRoutine();
 unsigned long uptime = ZERO;
-unsigned long lastSaveTime = ZERO;
-unsigned long lastSendTime = ZERO;
+unsigned long lastTimeSaved = ZERO;
+unsigned long lastTimeSent = ZERO;
 
 enum LINE_NUMS
 {
@@ -149,15 +147,15 @@ struct DISP
     enum MENUS
     {
         CLOCKFACE,
-        SETTINGS,
-            TIME_SETS,
+        MAIN_SETTINGS,
+            TIME_SETTINGS,
                 SET_TIME,
-            ALARM_SETS,
+            ALARM_SETTINGS,
         NOTIFICATION
     };
 
     LiquidCrystal_I2C display = LiquidCrystal_I2C(LCD_ADDR, LCD_COLS, LCD_ROWS);
-    String nextLines[LINES];
+    String nextLines[LCD_LINES];
     byte brightness;
     byte savedBrightness;
     unsigned long lastBlink = ZERO;
@@ -176,7 +174,7 @@ struct DISP
         this->display.init();
         this->display.setBacklight(BYTE_MAX);
         this->display.setCursor(ZERO, ZERO);
-        this->frameInterval = 1000/FRAMERATE;
+        this->frameInterval = 1000/LCD_FRAMERATE;
         this->getSaved();
     }
 
@@ -213,18 +211,7 @@ struct DISP
         }
     }
 
-    void next()
-    {
-        byte temp = (byte)this->menu;
-        if (temp == NOTIFICATION)
-            temp = CLOCKFACE;
-        else
-            temp++;
-        this->menu = (MENUS)temp;
-        this->resetSubSettings();
-    }
-
-    void goTo(MENUS go)
+    void goToMenu(MENUS go)
     {
         this->menu = go;
         this->resetSubSettings();
@@ -236,7 +223,7 @@ struct DISP
     if (this->savedBrightness)
         this->brightness = this->savedBrightness;
     else
-        this->brightness = DEFAULT_BRIGHTNESS;
+        this->brightness = LCD_DEFAULT_BRIGHTNESS;
     }
 
     void save()
@@ -249,12 +236,12 @@ struct DISP
         this->nextLines[row] = str;
     }
 
-    void add(String str, byte row)
+    void addToLine(String str, byte row)
     {
         this->setLine(this->nextLines[row] + str, row);
     }
 
-    void quickSet(String str1, String str2, String str3, String str4)
+    void quickSetLines(String str1, String str2, String str3, String str4)
     {
         this->clearLines();
         this->setLine(str1, LINE_1);
@@ -291,13 +278,8 @@ struct DISP
 
     void edit()
     {
-        this->edit(!this->editing);
-    }
-
-    void edit(bool set)
-    {
-        this->editing = set;
-        (set) ? this->display.blink() : this->display.noBlink();
+        this->editing = !this->editing;
+        (this->editing) ? this->display.blink() : this->display.noBlink();
     }
 
     void increaseBrightness()
@@ -357,7 +339,7 @@ private:
         this->pointer = LINE_1;
         this->scroll = LINE_1;
         this->cursor = false;
-        this->edit(false);
+        this->editing = false;
     }
 
     void saveOldLines()
@@ -415,7 +397,7 @@ private:
         }
     }
 
-    String oldLines[LINES];
+    String oldLines[LCD_LINES];
 };
 
 DISP display;
@@ -427,11 +409,9 @@ struct _INPUT
     Rotary rotary = Rotary(pins.rotary.a, pins.rotary.b, true, INPUT_PULLUP, ROTARY_DEBOUNCE);
     Push rotaryPush = Push(pins.rotary.sw, INPUT_PULLUP, ROTARY_PUSH_DEBOUNCE);
     Push button = Push(pins.button, INPUT_PULLUP, BUTTON_DEBOUNCE);
-
     ROTARYSTATES rotaryState;
-
     unsigned long lastRotaryCheck = ZERO;
-
+    
     void setup()
     {
         addInterrupt(pins.rotary.a, rotaryServiceRoutine, this->rotary.mode);
@@ -460,7 +440,7 @@ struct _INPUT
 
             if (holdTime >= RESET_INTERVAL)
             {
-                startReset();
+                reset();
             }
         }
     }
@@ -519,14 +499,14 @@ struct TIME
 
         if (this->fired)
         {
-            display.quickSet
+            display.quickSetLines
             (
                 "ALARM",
                 "PRESS BUTTON",
                 (String(this->alarmHour) + ':' + String(this->alarmMinute)),
                 ""
             );
-            display.goTo(display.NOTIFICATION);
+            display.goToMenu(display.NOTIFICATION);
             this->buzz();
             if (input.button.current()) 
             {
@@ -538,17 +518,17 @@ struct TIME
 
     void decreaseTimeZone()
     {
-        if (this->timeZone != MIN_TIMEZONE) this->timeZone--;
+        if (this->timeZone != TIMEZONE_MINIMUM) this->timeZone--;
     }
 
     void increaseTimeZone()
     {
-        if (this->timeZone != MAX_TIMEZONE) this->timeZone++;
+        if (this->timeZone != TIMEZONE_MAXIMUM) this->timeZone++;
     }
 
     void getSaved()
     {
-        this->timeZone = EEPROM.read(TIME_ZONE_ADDRESS) + MIN_TIMEZONE;
+        this->timeZone = EEPROM.read(TIME_ZONE_ADDRESS) + TIMEZONE_MINIMUM;
         this->useGMT = (EEPROM.read(USE_GMT_ADDRESS) > 0) ? true : false;
         this->use24Hour = (EEPROM.read(USE_24H_ADDRESS) > 0) ? true : false;
         this->useShortDate = (EEPROM.read(USE_SHORT_DATE_ADDRESS) > 0) ? true : false;
@@ -559,7 +539,7 @@ struct TIME
 
     void save()
     {
-        EEPROM.update(TIME_ZONE_ADDRESS, (this->timeZone - MIN_TIMEZONE));
+        EEPROM.update(TIME_ZONE_ADDRESS, (this->timeZone - TIMEZONE_MINIMUM));
         EEPROM.update(USE_GMT_ADDRESS, (this->useGMT) ? 1 : 0);
         EEPROM.update(USE_24H_ADDRESS, (this->use24Hour) ? 1 : 0);
         EEPROM.update(USE_SHORT_DATE_ADDRESS, (this->useShortDate) ? 1 : 0);
@@ -570,26 +550,26 @@ struct TIME
 
     void decreaseAlarmHour()
     {
-        if (this->alarmHour > HR_MIN)
+        if (this->alarmHour > HOURS_MINIMUM)
             this->alarmHour--;
 
     }
 
     void increaseAlarmHour()
     {
-        if (this->alarmHour < HR_MAX)
+        if (this->alarmHour < HOURS_MAXIMUM)
             this->alarmHour++;
     }
 
     void decreaseAlarmMinute()
     {
-        if (this->alarmMinute > MIN_MIN)
+        if (this->alarmMinute > MINUTES_MINIMUM)
             this->alarmMinute--;
     }
 
     void increaseAlarmMinute()
     {
-        if (this->alarmMinute < MIN_MAX)
+        if (this->alarmMinute < MINUTES_MAXIMUM)
             this->alarmMinute++;
     }
 private:

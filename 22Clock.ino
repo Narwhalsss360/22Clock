@@ -1,12 +1,19 @@
 #include "22Clock.h"
 
-void startReset()
+void reset()
 {
-    save(true);
-    display.nextLines[LINE_1] = "Resseting...";
-    display.send();
+    saveAll(true);
+    display.quickSetLines
+    (
+        "Resseting...",
+        "",
+        "",
+        ""
+    );
+    display.goToMenu(display.NOTIFICATION);
     delay(500);
-    reset();
+    void (*pReset) (void) = NULL;
+    pReset();
 }
 
 void rotaryServiceRoutine()
@@ -14,7 +21,7 @@ void rotaryServiceRoutine()
     input.rotary.serviceRoutine();
 }
 
-void save(bool wasReset)
+void saveAll(bool wasReset)
 {
     if (wasReset)
     {
@@ -29,43 +36,43 @@ void save(bool wasReset)
     time.save();
 }
 
-bool getSaved()
+bool getAllSaved()
 {
     display.getSaved();
     time.getSaved();
     return (EEPROM.read(WAS_RESET_ADDRESS) > 0) ? true : false;
 }
 
-void done(unsigned int addr, unsigned long data)
+void comRecv(unsigned int addr, unsigned long data)
 {
     if (addr == TIME_RECV_ADDR)
     {
         time.localTime = DateTime(data);
         display.clearLines();
-        display.quickSet
+        display.quickSetLines
         (
             "TIME RECEIVED",
             "UNIX",
             String(data),
             ""
         );
-        display.goTo(display.NOTIFICATION);
+        display.goToMenu(display.NOTIFICATION);
     }
 }
 
 void serialEvent()
 {
-    SerialCom.onSerialEvent(&done, NULL);
+    SerialCom.onSerialEvent(&comRecv, NULL);
 }
 
-void sendTime()
+void comSendTime()
 {
     SerialCom.send(TIME_SEND_ADDR, time.localTime.unixtime());
 }
 
 void setup()
 {
-    bool wasReset = getSaved();
+    bool wasReset = getAllSaved();
     input.setup();
     time.setup();
     display.setup();
@@ -75,7 +82,7 @@ void setup()
     display.clearLines();
     if (wasReset)
     {
-        display.quickSet
+        display.quickSetLines
         (
             "Welcome",
             USER,
@@ -85,7 +92,7 @@ void setup()
     }
     else
     {
-        display.quickSet
+        display.quickSetLines
         (
             "Welcome",
             USER,
@@ -93,13 +100,13 @@ void setup()
             ""
         );
     }
-    display.goTo(display.NOTIFICATION);
+    display.goToMenu(display.NOTIFICATION);
     //delay(WAIT_TIME);
-    display.goTo(display.CLOCKFACE);
+    display.goToMenu(display.CLOCKFACE);
 }
 
 #pragma region Menu Methods
-void menuSwitch()
+void menuSwitching()
 {
     if (display.menu == display.CLOCKFACE || display.menu == display.NOTIFICATION)
         display.cursor = false;
@@ -111,16 +118,16 @@ void menuSwitch()
     case display.CLOCKFACE:
         clockface();
         break;
-    case display.SETTINGS:
+    case display.MAIN_SETTINGS:
         settings();
         break;
-    case display.TIME_SETS:
+    case display.TIME_SETTINGS:
         timeSettings();
         break;
     case display.SET_TIME:
         setTime();
         break;
-    case display.ALARM_SETS:
+    case display.ALARM_SETTINGS:
         setAlarm();
         break;
     case display.NOTIFICATION:
@@ -138,39 +145,39 @@ void clockface()
     display.setLine(USER, LINE_1);
 
     display.setLine(String((time.use24Hour) ? ((time.useGMT) ? time.GMT.hour() : time.localTime.hour()) : ((time.useGMT) ? time.GMT.twelveHour() : time.localTime.twelveHour())) , LINE_2);
-    display.add(":", LINE_2);
-    display.add(String(time.localTime.minute()), LINE_2);
-    display.add(":", LINE_2);
-    display.add(String(time.localTime.second()), LINE_2);
+    display.addToLine(":", LINE_2);
+    display.addToLine(String(time.localTime.minute()), LINE_2);
+    display.addToLine(":", LINE_2);
+    display.addToLine(String(time.localTime.second()), LINE_2);
 
     if (!time.use24Hour)
         if (time.useGMT)
-            display.add((time.GMT.isPM()) ? " PM" : " AM", LINE_2);
+            display.addToLine((time.GMT.isPM()) ? " PM" : " AM", LINE_2);
         else
-            display.add((time.localTime.isPM()) ? " PM" : " AM", LINE_2);
+            display.addToLine((time.localTime.isPM()) ? " PM" : " AM", LINE_2);
 
     display.setLine(daysOfTheWeek[(time.useGMT) ? time.GMT.dayOfTheWeek() : time.localTime.dayOfTheWeek()], LINE_3);
 
     if (input.rotaryPush.pressed())
-        display.goTo(display.SETTINGS);
+        display.goToMenu(display.MAIN_SETTINGS);
 
     if (time.useShortDate)
     {
         if (time.useGMT)
         {
             display.setLine(String(time.GMT.month()), LINE_4);
-            display.add(", ", LINE_4);
-            display.add(String(time.GMT.day()), LINE_4);
-            display.add(" ", LINE_4);
-            display.add(String(time.GMT.year()), LINE_4);
+            display.addToLine(", ", LINE_4);
+            display.addToLine(String(time.GMT.day()), LINE_4);
+            display.addToLine(" ", LINE_4);
+            display.addToLine(String(time.GMT.year()), LINE_4);
         }
         else
         {
             display.setLine(String(time.localTime.month()), LINE_4);
-            display.add(", ", LINE_4);
-            display.add(String(time.localTime.day()), LINE_4);
-            display.add(" ", LINE_4);
-            display.add(String(time.localTime.year()), LINE_4);
+            display.addToLine(", ", LINE_4);
+            display.addToLine(String(time.localTime.day()), LINE_4);
+            display.addToLine(" ", LINE_4);
+            display.addToLine(String(time.localTime.year()), LINE_4);
         }
     }
     else
@@ -178,18 +185,18 @@ void clockface()
         if (time.useGMT)
         {
             display.setLine(String(months[time.GMT.month() - 1]), LINE_4);
-            display.add(", ", LINE_4);
-            display.add(String(time.GMT.day()), LINE_4);
-            display.add(" ", LINE_4);
-            display.add(String(time.GMT.year()), LINE_4);
+            display.addToLine(", ", LINE_4);
+            display.addToLine(String(time.GMT.day()), LINE_4);
+            display.addToLine(" ", LINE_4);
+            display.addToLine(String(time.GMT.year()), LINE_4);
         }
         else
         {
             display.setLine(String(months[time.localTime.month() - 1]), LINE_4);
-            display.add(", ", LINE_4);
-            display.add(String(time.localTime.day()), LINE_4);
-            display.add(" ", LINE_4);
-            display.add(String(time.localTime.year()), LINE_4);
+            display.addToLine(", ", LINE_4);
+            display.addToLine(String(time.localTime.day()), LINE_4);
+            display.addToLine(" ", LINE_4);
+            display.addToLine(String(time.localTime.year()), LINE_4);
         }
     }
 
@@ -199,7 +206,7 @@ void clockface()
 void settings()
 {
     display.clearLines();
-    display.quickSet
+    display.quickSetLines
     (
         "TIME SETTINGS",
         "ALARM SETTINGS",
@@ -213,9 +220,9 @@ void settings()
     {
         switch (display.pointer)
         {
-        case LINE_1: display.goTo(display.TIME_SETS);
+        case LINE_1: display.goToMenu(display.TIME_SETTINGS);
             break;
-        case LINE_2: display.goTo(display.ALARM_SETS);
+        case LINE_2: display.goToMenu(display.ALARM_SETTINGS);
             break;
         case LINE_3: display.edit();
             break;
@@ -239,7 +246,7 @@ void settings()
     }
 
     if (input.button.pressed())
-        display.goTo(display.CLOCKFACE);
+        display.goToMenu(display.CLOCKFACE);
 
     display.send();
 }
@@ -260,7 +267,7 @@ void timeSettings()
         switch (display.pointer)
         {
         case LINE_1:
-            display.goTo(display.SET_TIME);
+            display.goToMenu(display.SET_TIME);
             break;
         case LINE_2:
         case LINE_3:
@@ -325,7 +332,7 @@ void timeSettings()
     }
 
     if (input.button.pressed()) 
-        display.goTo(display.SETTINGS);
+        display.goToMenu(display.MAIN_SETTINGS);
 
     display.send();
 }
@@ -425,7 +432,7 @@ void setTime()
     time.rtc.adjust(newTime);
 
     if (input.button.pressed()) 
-        display.goTo(display.TIME_SETS);
+        display.goToMenu(display.TIME_SETTINGS);
 
     display.send();
 }
@@ -433,7 +440,7 @@ void setTime()
 void setAlarm()
 {
     display.clearLines();
-    display.quickSet
+    display.quickSetLines
     (
         "ENABLED",
         "HOUR",
@@ -501,7 +508,7 @@ void setAlarm()
     }
 
     if (input.button.pressed())
-        display.goTo(display.SETTINGS);
+        display.goToMenu(display.MAIN_SETTINGS);
 
     display.send();
 }
@@ -519,14 +526,14 @@ void loop()
     uptime = millis();
     time.update();
     input.update();
-    menuSwitch();
-    if (uptime - lastSendTime >= TIME_SEND_INTERVAL)
+    menuSwitching();
+    if (uptime - lastTimeSent >= TIME_SEND_INTERVAL)
     {
-        lastSendTime = uptime;
-        sendTime();
+        lastTimeSent = uptime;
+        comSendTime();
     }
-    if (uptime - lastSaveTime >= SAVE_INTVERVAL)
+    if (uptime - lastTimeSaved >= SAVE_INTVERVAL)
     {
-        save(false);
+        saveAll(false);
     }
 }
