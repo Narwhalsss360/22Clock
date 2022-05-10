@@ -208,9 +208,9 @@ void settings()
     display.clearLines();
     display.quickSetLines
     (
-        "TIME SETTINGS",
-        "ALARM SETTINGS",
-        "BRIGHTNESS",
+        "Time Settings",
+        "Alarm Settings",
+        "Brightness",
         ""
     );
 
@@ -254,12 +254,12 @@ void settings()
 void timeSettings()
 {
     display.clearLines();
-    display.setLine("SET TIME", LINE_1);
-    display.setLine("USE 24 HOUR", LINE_2);
+    display.setLine("Set Time", LINE_1);
+    display.setLine("Use 24-Hour", LINE_2);
     display.setLineFromRight(boolToString(time.use24Hour), LINE_2);
-    display.setLine("USE GMT", LINE_3);
+    display.setLine("Use GMT", LINE_3);
     display.setLineFromRight(boolToString(time.useGMT), LINE_3);
-    display.setLine("TIMEZONE", LINE_4);
+    display.setLine("Timezone", LINE_4);
     display.setLineFromRight(String(time.timeZone), LINE_4);
 
     if (input.rotaryPush.pressed())
@@ -341,17 +341,17 @@ void setTime()
 {
     DateTime newTime = time.localTime;
     display.clearLines();
-    display.setLine("SET HOUR", LINE_1);
+    display.setLine("Set Hour", LINE_1);
 	display.setLineFromRight(String(newTime.hour()), LINE_1);
-	display.setLine("SET MINUTE", LINE_2);
+	display.setLine("Set Minute", LINE_2);
 	display.setLineFromRight(String(newTime.minute()), LINE_2);
-	display.setLine("SET SECOND", LINE_3);
+	display.setLine("Set Second", LINE_3);
 	display.setLineFromRight(String(newTime.second()), LINE_3);
-	display.setLine("SET MONTH", LINE_4);
+	display.setLine("Set Second", LINE_4);
 	display.setLineFromRight(String(newTime.month()), LINE_4);
-	display.setLine("SET DAY", LINE_5);
+	display.setLine("Set Day", LINE_5);
 	display.setLineFromRight(String(newTime.day()), LINE_5);
-	display.setLine("SET YEAR", LINE_6);
+	display.setLine("Set Year", LINE_6);
 	display.setLineFromRight(String(newTime.year()), LINE_6);
 	
     if (input.rotaryPush.pressed()) 
@@ -442,9 +442,9 @@ void setAlarm()
     display.clearLines();
     display.quickSetLines
     (
-        "ENABLED",
-        "HOUR",
-        "MINUTE",
+        "Alarm",
+        "Hour",
+        "Minute",
         ""
     );
 
