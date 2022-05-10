@@ -1015,6 +1015,8 @@ void Rotary::init()
 
 void Rotary::serviceRoutine()
 {
+	if (!(this->inverted) ? !digitalRead(this->pinA) : digitalRead(this->pinA))
+		return;
 	if (this->useInterrupt)
 	{
 		if (millis() - this->lastRead >= this->debouce)
