@@ -143,11 +143,11 @@ void clockface()
 {
     display.clearLines();
     
-    DateTime& currentTimeSetting = (time.useGMT) ? time.GMT : time.localTime;
+    DateTime& displayTime = (time.useGMT) ? time.GMT : time.localTime;
     String timeBuffer = (time.use24Hour) ? "hh:mm:ss" : "hh:mm:ss AP";
     String dateBuffer = (time.useShortDate) ? "DDD, MM/DD/YY" : "DDD, MMM DD, YYYY"; 
-    currentTimeSetting.toString((char*)timeBuffer.c_str());
-    currentTimeSetting.toString((char*)dateBuffer.c_str());
+    displayTime.toString((char*)timeBuffer.c_str());
+    displayTime.toString((char*)dateBuffer.c_str());
 
     display.setLine(USER, LINE_1);
     display.setLine(timeBuffer, LINE_2);
