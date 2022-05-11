@@ -42,11 +42,12 @@
 #define LCD_LINES 8
 #define LCD_BLINK_INTERVAL 1000
 
-#define USER "11:11"
+#define USER "'22 Clock"
 #define START_WAIT_TIME 2000
 
 #define isBetweenInclude(low, val, high) low <= val && val <= high
 #define isBetween(low, val, high) low < val && val < high
+#define bool2StrD(v, t, f) (v) ? t : f
 #pragma endregion
 
 #pragma region Change DateTime

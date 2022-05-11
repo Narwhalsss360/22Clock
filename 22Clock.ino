@@ -141,68 +141,31 @@ void menuSwitching()
 
 void clockface()
 {
-    char timeBuf[] = "hh:mm:ss";
-    time.localTime.toString(timeBuf);
     display.clearLines();
+    
+    DateTime& currentTimeSetting = (time.useGMT) ? time.GMT : time.localTime;
+    String timeBuffer = (time.use24Hour) ? "hh:mm:ss" : "hh:mm:ss AP";
+    String dateBuffer = (time.useShortDate) ? "DDD, MM/DD/YY" : "DDD, MMM DD, YYYY"; 
+    currentTimeSetting.toString((char*)timeBuffer.c_str());
+    currentTimeSetting.toString((char*)dateBuffer.c_str());
+
     display.setLine(USER, LINE_1);
-
-    display.setLine(String(timeBuf), LINE_2);
-    //display.setLine(String((time.use24Hour) ? ((time.useGMT) ? time.GMT.hour() : time.localTime.hour()) : ((time.useGMT) ? time.GMT.twelveHour() : time.localTime.twelveHour())) , LINE_2);
-    //display.addToLine(":", LINE_2);
-    //display.addToLine(String(time.localTime.minute()), LINE_2);
-    //display.addToLine(":", LINE_2);
-    //display.addToLine(timeBuf, LINE_2);
-    //display.addToLine(String(time.localTime.second()), LINE_2);
-
-    if (!time.use24Hour)
-        if (time.useGMT)
-            display.addToLine((time.GMT.isPM()) ? " PM" : " AM", LINE_2);
-        else
-            display.addToLine((time.localTime.isPM()) ? " PM" : " AM", LINE_2);
-
-    display.setLine(daysOfTheWeek[(time.useGMT) ? time.GMT.dayOfTheWeek() : time.localTime.dayOfTheWeek()], LINE_3);
-
-    if (input.rotaryPush.pressed())
-        display.goToMenu(display.MAIN_SETTINGS);
-
-    if (time.useShortDate)
+    display.setLine(timeBuffer, LINE_2);
+    display.setLine(dateBuffer, LINE_3);
+    display.setLine("Alarm: ", LINE_4);
+    if (time.alarm)
     {
-        if (time.useGMT)
-        {
-            display.setLine(String(time.GMT.month()), LINE_4);
-            display.addToLine(", ", LINE_4);
-            display.addToLine(String(time.GMT.day()), LINE_4);
-            display.addToLine(" ", LINE_4);
-            display.addToLine(String(time.GMT.year()), LINE_4);
-        }
-        else
-        {
-            display.setLine(String(time.localTime.month()), LINE_4);
-            display.addToLine(", ", LINE_4);
-            display.addToLine(String(time.localTime.day()), LINE_4);
-            display.addToLine(" ", LINE_4);
-            display.addToLine(String(time.localTime.year()), LINE_4);
-        }
+        display.addToLine(String(time.alarmHour), LINE_4);
+        display.addToLine(":", LINE_4);
+        display.addToLine(String(time.alarmMinute), LINE_4);
     }
     else
     {
-        if (time.useGMT)
-        {
-            display.setLine(String(months[time.GMT.month() - 1]), LINE_4);
-            display.addToLine(", ", LINE_4);
-            display.addToLine(String(time.GMT.day()), LINE_4);
-            display.addToLine(" ", LINE_4);
-            display.addToLine(String(time.GMT.year()), LINE_4);
-        }
-        else
-        {
-            display.setLine(String(months[time.localTime.month() - 1]), LINE_4);
-            display.addToLine(", ", LINE_4);
-            display.addToLine(String(time.localTime.day()), LINE_4);
-            display.addToLine(" ", LINE_4);
-            display.addToLine(String(time.localTime.year()), LINE_4);
-        }
+        display.addToLine("Off", LINE_4);
     }
+
+    if (input.rotaryPush.pressed())
+        display.goToMenu(display.MAIN_SETTINGS);
 
     display.send();
 }
@@ -452,7 +415,7 @@ void setAlarm()
         ""
     );
 
-    display.setLineFromRight(boolToString(time.alarm), LINE_1);
+    display.setLineFromRight(bool2StrD(time.alarm, "On", "Off"), LINE_1);
     display.setLineFromRight(String(time.alarmHour), LINE_2);
     display.setLineFromRight(String(time.alarmMinute), LINE_3);
 
