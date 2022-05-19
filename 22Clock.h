@@ -126,8 +126,8 @@ enum MEM_ADDRESSES
 #pragma region PINS
 struct ROTARYPINS
 {
-    const byte a = 2,
-        b = 3,
+    const byte a = 3,
+        b = 2,
         sw = 4;
 };
 
@@ -214,8 +214,8 @@ struct DISP
 
     void goToMenu(MENUS go)
     {
-        this->menu = go;
         this->resetSubSettings();
+        this->menu = go;
     }
 
     void getSaved()
@@ -340,7 +340,8 @@ private:
         this->pointer = LINE_1;
         this->scroll = LINE_1;
         this->cursor = false;
-        this->editing = false;
+        if (this->editing)
+            edit();
     }
 
     void saveOldLines()
