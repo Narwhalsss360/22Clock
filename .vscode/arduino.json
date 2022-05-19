@@ -3,5 +3,5 @@
     "board": "arduino:avr:nano",
     "programmer": "arduino:arduinoisp",
     "sketch": "22Clock.ino",
-    "port": "COM15"
+    "port": "COM13"
 }

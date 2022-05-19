@@ -488,6 +488,22 @@ void notification()
 }
 #pragma endregion
 
+void debug()
+{
+    Serial.println("\n'22 Clock Debugger.");
+
+    Serial.println("Inputs:");
+    Serial.print("    Button: ");
+    Serial.println(input.button.current());
+    Serial.print("    Rotary Push: ");
+    Serial.println(input.rotaryPush.current());
+    Serial.print("    Rotary: ");
+    Serial.println((int)input.rotaryState);
+
+    Serial.print("Menu: ");
+    Serial.println((int)display.menu);
+}
+
 void loop()
 {
     uptime = millis();
@@ -503,4 +519,7 @@ void loop()
     {
         saveAll(false);
     }
+    #ifdef DEBUG
+    debug();
+    #endif
 }
