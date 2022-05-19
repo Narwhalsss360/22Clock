@@ -489,7 +489,7 @@ struct TIME
         this->localTime = this->rtc.now();
         this->GMT = DateTime(this->localTime.unixtime() + (this->timeZone*SECONDS_IN_HOUR));
     
-        if (this->localTime.hour() == this->alarmHour && alarm)
+        if (this->localTime.hour() == this->alarmHour && alarm && !display.editing)
         {
             if (this->localTime.minute() == this->alarmMinute)
             {
