@@ -23,6 +23,7 @@
 #define TIME_RECV_ADDR 1
 #define TIME_SEND_ADDR 1
 #define TIME_SEND_INTERVAL 500
+#define MIN_ALARM_TIME 3
 
 #define BUZZER_INTERVAL 500
 
@@ -488,11 +489,11 @@ struct TIME
         this->localTime = this->rtc.now();
         this->GMT = DateTime(this->localTime.unixtime() + (this->timeZone*SECONDS_IN_HOUR));
     
-        if (this->localTime.hour() == this->alarmHour)
+        if (this->localTime.hour() == this->alarmHour && alarm)
         {
             if (this->localTime.minute() == this->alarmMinute)
             {
-                if (isBetweenInclude(ZERO, this->localTime.second(), 5))
+                if (isBetweenInclude(ZERO, this->localTime.second(), MIN_ALARM_TIME))
                 {
                     this->fired = true;
                 }
