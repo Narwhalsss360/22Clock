@@ -304,7 +304,7 @@ struct DISP
         if (this->pointer > LINE_1)
         {
             this->pointer--;
-            if (this->pointer < LINE_4)
+            if (this->pointer < LINE_5)
             {
                 this->scroll = 0;
             }
