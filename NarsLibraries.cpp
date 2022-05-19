@@ -673,20 +673,12 @@ void NarsSerialCom::onSerialEvent(void (*done) (unsigned int _register, unsigned
 		String dataString = completeString.substring(6, 14);;
 		unsigned int _register;
 		unsigned long _data;
-		char _registerBuffer[4];
-		char dataBuffer[8];
 
-		strcpy(_registerBuffer, registerString.c_str());
-		strcpy(dataBuffer, dataString.c_str());
+		_register = x2i((char *)registerString.c_str());
+		_data = x2i((char *)dataString.c_str());
 
-		_register = x2i(_registerBuffer);
-		_data = x2i(dataBuffer);
-
-		if (_register <= 256)
-		{
-			data[_register] = _data;
-		}
 		done(_register, _data);
+		return;
 	}
 
 	if (command == "*S")

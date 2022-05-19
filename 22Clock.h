@@ -366,7 +366,7 @@ private:
         else
             return false;
     }
-    
+
     byte getLastLine()
     {
         for (byte line = LINE_8; line != LINE_1; line--)

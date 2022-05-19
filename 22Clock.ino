@@ -47,16 +47,7 @@ void comRecv(unsigned int addr, unsigned long data)
 {
     if (addr == TIME_RECV_ADDR)
     {
-        time.localTime = DateTime(data);
-        display.clearLines();
-        display.quickSetLines
-        (
-            "TIME RECEIVED",
-            "UNIX",
-            String(data),
-            ""
-        );
-        display.goToMenu(display.NOTIFICATION);
+        time.rtc.adjust(DateTime(data));
     }
 }
 
@@ -78,6 +69,7 @@ void setup()
     display.setup();
 
     Serial.begin(SERIALCOM_BAUD);
+    SerialCom.connected = true;
 
     display.clearLines();
     if (wasReset)
@@ -484,7 +476,8 @@ void notification()
 {
     display.send();
 
-    if (input.button.pressed()) display.menu = display.CLOCKFACE;
+    if (input.button.pressed())
+        display.goToMenu(display.CLOCKFACE);
 }
 #pragma endregion
 
@@ -522,4 +515,5 @@ void loop()
     #ifdef DEBUG
     debug();
     #endif
+    SerialCom.setReady();
 }
