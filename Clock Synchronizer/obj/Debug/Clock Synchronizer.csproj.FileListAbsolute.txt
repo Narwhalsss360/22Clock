@@ -1,0 +1,14 @@
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\bin\Debug\Clock Synchronizer.exe.config
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\bin\Debug\Clock Synchronizer.exe
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\bin\Debug\Clock Synchronizer.pdb
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\bin\Debug\Nars-Framework48-Libraries.dll
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\bin\Debug\Nars-Framework48-Libraries.pdb
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Debug\Clock Synchronizer.csproj.AssemblyReference.cache
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Debug\Clock Synchronizer.csproj.SuggestedBindingRedirects.cache
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Debug\Clock_Synchronizer.ClockSynchronizer.resources
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Debug\Clock_Synchronizer.Properties.Resources.resources
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Debug\Clock Synchronizer.csproj.GenerateResource.cache
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Debug\Clock Synchronizer.csproj.CoreCompileInputs.cache
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Debug\Clock Synchronizer.csproj.CopyComplete
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Debug\Clock Synchronizer.exe
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Debug\Clock Synchronizer.pdb

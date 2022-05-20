@@ -1,0 +1,6 @@
+C:\Users\sandr\source\repos\Nars-Libraries\Nars-Libraries-Framework48\bin\Debug\Nars-Cs-Libraries.dll
+C:\Users\sandr\source\repos\Nars-Libraries\Nars-Libraries-Framework48\bin\Debug\Nars-Cs-Libraries.pdb
+C:\Users\sandr\source\repos\Nars-Libraries\Nars-Libraries-Framework48\obj\Debug\Nars-Libraries-Framework48.csproj.AssemblyReference.cache
+C:\Users\sandr\source\repos\Nars-Libraries\Nars-Libraries-Framework48\obj\Debug\Nars-Libraries-Framework48.csproj.CoreCompileInputs.cache
+C:\Users\sandr\source\repos\Nars-Libraries\Nars-Libraries-Framework48\obj\Debug\Nars-Cs-Libraries.dll
+C:\Users\sandr\source\repos\Nars-Libraries\Nars-Libraries-Framework48\obj\Debug\Nars-Cs-Libraries.pdb

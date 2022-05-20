@@ -1,0 +1,7 @@
+C:\Users\sandr\source\repos\Nars-Libraries\Nars-Cs-Libraries\bin\Debug\Nars-Cs-Libraries.dll
+C:\Users\sandr\source\repos\Nars-Libraries\Nars-Cs-Libraries\bin\Debug\Nars-Cs-Libraries.pdb
+C:\Users\sandr\source\repos\Nars-Libraries\Nars-Cs-Libraries\obj\Debug\Nars-Cs-Libraries-Framework.csproj.AssemblyReference.cache
+C:\Users\sandr\source\repos\Nars-Libraries\Nars-Cs-Libraries\obj\Debug\Nars-Cs-Libraries-Framework.csproj.CoreCompileInputs.cache
+C:\Users\sandr\source\repos\Nars-Libraries\Nars-Cs-Libraries\obj\Debug\Nars-Cs-Libraries.dll
+C:\Users\sandr\source\repos\Nars-Libraries\Nars-Cs-Libraries\obj\Debug\Nars-Cs-Libraries.pdb
+C:\Users\sandr\source\repos\Nars-Libraries\Nars-Cs-Libraries\bin\Debug\SerialPort.dll

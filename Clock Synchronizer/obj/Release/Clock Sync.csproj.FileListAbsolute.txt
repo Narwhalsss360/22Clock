@@ -1,0 +1,15 @@
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\bin\Release\Nars-Framework48-Libraries.dll
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\bin\Release\SerialPort.dll
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\bin\Release\Nars-Framework48-Libraries.pdb
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Release\Clock Sync.csproj.AssemblyReference.cache
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Release\Clock Sync.csproj.SuggestedBindingRedirects.cache
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Release\Clock_Synchronizer.ClockSynchronizer.resources
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Release\Clock Sync.csproj.GenerateResource.cache
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Release\Clock Sync.csproj.CoreCompileInputs.cache
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Release\Clock Sync.csproj.CopyComplete
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\bin\Release\Clock Synchronizer.exe.config
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\bin\Release\Clock Synchronizer.exe
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\bin\Release\Clock Synchronizer.pdb
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Release\Clock_Synchronizer.Properties.Resources.resources
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Release\Clock Synchronizer.exe
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\obj\Release\Clock Synchronizer.pdb

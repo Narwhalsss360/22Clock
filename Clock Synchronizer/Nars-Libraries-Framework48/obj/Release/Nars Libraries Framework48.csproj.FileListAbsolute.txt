@@ -1,0 +1,15 @@
+C:\Users\sandr\source\repos\Nars-Libraries\Libraries\Nars-Libraries-Framework48\bin\Release\Nars-Framework48-Libraries.dll
+C:\Users\sandr\source\repos\Nars-Libraries\Libraries\Nars-Libraries-Framework48\bin\Release\Nars-Framework48-Libraries.pdb
+C:\Users\sandr\source\repos\Nars-Libraries\Libraries\Nars-Libraries-Framework48\bin\Release\SerialPort.dll
+C:\Users\sandr\source\repos\Nars-Libraries\Libraries\Nars-Libraries-Framework48\obj\Release\Nars Libraries Framework48.csproj.AssemblyReference.cache
+C:\Users\sandr\source\repos\Nars-Libraries\Libraries\Nars-Libraries-Framework48\obj\Release\Nars Libraries Framework48.csproj.CoreCompileInputs.cache
+C:\Users\sandr\source\repos\Nars-Libraries\Libraries\Nars-Libraries-Framework48\obj\Release\Nars Libraries Framework48.csproj.CopyComplete
+C:\Users\sandr\source\repos\Nars-Libraries\Libraries\Nars-Libraries-Framework48\obj\Release\Nars-Framework48-Libraries.dll
+C:\Users\sandr\source\repos\Nars-Libraries\Libraries\Nars-Libraries-Framework48\obj\Release\Nars-Framework48-Libraries.pdb
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\Nars-Libraries-Framework48\bin\Release\Nars-Framework48-Libraries.dll
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\Nars-Libraries-Framework48\bin\Release\Nars-Framework48-Libraries.pdb
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\Nars-Libraries-Framework48\obj\Release\Nars Libraries Framework48.csproj.AssemblyReference.cache
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\Nars-Libraries-Framework48\obj\Release\Nars Libraries Framework48.csproj.CoreCompileInputs.cache
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\Nars-Libraries-Framework48\obj\Release\Nars Libraries Framework48.csproj.CopyComplete
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\Nars-Libraries-Framework48\obj\Release\Nars-Framework48-Libraries.dll
+E:\Users\sandr\Documents\Arduino\22Clock\Clock Sync\Nars-Libraries-Framework48\obj\Release\Nars-Framework48-Libraries.pdb
