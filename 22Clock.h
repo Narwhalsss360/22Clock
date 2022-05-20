@@ -43,7 +43,6 @@
 #define LCD_LINES 8
 #define LCD_BLINK_INTERVAL 1000
 
-#define USER "'22 Clock"
 #define START_WAIT_TIME 2000
 
 #define isBetweenInclude(low, val, high) low <= val && val <= high
@@ -97,6 +96,7 @@ void rotaryServiceRoutine();
 unsigned long uptime = ZERO;
 unsigned long lastTimeSaved = ZERO;
 unsigned long lastTimeSent = ZERO;
+String user = "'22 Clock";
 
 enum LINE_NUMS
 {

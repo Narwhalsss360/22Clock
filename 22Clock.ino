@@ -77,7 +77,7 @@ void setup()
         display.quickSetLines
         (
             "Welcome",
-            USER,
+            user,
             "Was reset.",
             ""
         );
@@ -87,13 +87,13 @@ void setup()
         display.quickSetLines
         (
             "Welcome",
-            USER,
+            user,
             "",
             ""
         );
     }
     display.goToMenu(display.NOTIFICATION);
-    //delay(WAIT_TIME);
+    delay(START_WAIT_TIME);
     display.goToMenu(display.CLOCKFACE);
 }
 
@@ -141,7 +141,7 @@ void clockface()
     displayTime.toString((char*)timeBuffer.c_str());
     displayTime.toString((char*)dateBuffer.c_str());
 
-    display.setLine(USER, LINE_1);
+    display.setLine(user, LINE_1);
     display.setLine(timeBuffer, LINE_2);
     display.setLine(dateBuffer, LINE_3);
     display.setLine("Alarm: ", LINE_4);
