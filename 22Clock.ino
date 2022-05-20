@@ -72,26 +72,13 @@ void setup()
     SerialCom.connected = true;
 
     display.clearLines();
-    if (wasReset)
-    {
-        display.quickSetLines
-        (
-            "Welcome",
-            user,
-            "Was reset.",
-            ""
-        );
-    }
-    else
-    {
-        display.quickSetLines
-        (
-            "Welcome",
-            user,
-            "",
-            ""
-        );
-    }
+    display.quickSetLines
+    (
+        "Welcome",
+        user,
+        (wasReset) ? "Succesfully Reset" : "",
+        ""
+    );
     display.goToMenu(display.NOTIFICATION);
     display.forceSend();
     delay(START_WAIT_TIME);
