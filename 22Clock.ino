@@ -93,6 +93,7 @@ void setup()
         );
     }
     display.goToMenu(display.NOTIFICATION);
+    display.forceSend();
     delay(START_WAIT_TIME);
     display.goToMenu(display.CLOCKFACE);
 }

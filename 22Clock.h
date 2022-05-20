@@ -213,6 +213,36 @@ struct DISP
         }
     }
 
+    void forceSend()
+    {
+        this->lastFrameTime = uptime;
+        analogWrite(pins.displayBacklight, this->brightness);
+
+        if (cursor)
+                this->cursorCol = this->addPointer(this->pointer);
+
+        if (this->newLines())
+        {
+            this->saveOldLines();
+            this->display.clear();
+
+            this->display.setCursor(ZERO, LINE_1);
+            this->display.print(this->nextLines[LINE_1 + this->scroll]);
+
+            this->display.setCursor(ZERO, LINE_2);
+            this->display.print(this->nextLines[LINE_2 + this->scroll]);
+
+            this->display.setCursor(ZERO, LINE_3);
+            this->display.print(this->nextLines[LINE_3 + this->scroll]);
+
+            this->display.setCursor(ZERO, LINE_4);
+            this->display.print(this->nextLines[LINE_4 + this->scroll]);
+            
+            if (this->cursor)
+                display.setCursor(this->cursorCol, this->pointer);
+        }
+    }
+
     void goToMenu(MENUS go)
     {
         this->resetSubSettings();
